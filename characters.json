@@ -4,7 +4,7 @@
     "team": "COBALT",
     "role": "戦略家",
     "mbti": "INTJ",
-    "note": "INTJ 戦略家",
+    "note": "INTJ 戦略家｜リサーチ",
     "catch": "問いを見抜き、勝ち筋を描く。",
     "keywords": "構造化、未来志向、独立心",
     "strengths": [
@@ -22,14 +22,16 @@
     "line": "答えを急ぐ前に、問いを正しく設計しよう。",
     "img": "chars/cipher.jpg",
     "sheet": "grokbot_character_sheets/01_cipher.png",
-    "sheet_md": "grokbot_character_sheets/01_cipher.md"
+    "sheet_md": "grokbot_character_sheets/01_cipher.md",
+    "function": "リサーチ",
+    "function_reason": "少ない情報から仮説を組み立てるのが強み"
   },
   "BIT": {
     "kana": "ビット",
     "team": "COBALT",
     "role": "発明家",
     "mbti": "INTP",
-    "note": "INTP 発明家",
+    "note": "INTP 発明家｜プレゼン",
     "catch": "「もしも」を形にする小さな天才。",
     "keywords": "好奇心、実験好き、自由発想",
     "strengths": [
@@ -47,14 +49,16 @@
     "line": "変なアイデア？ 最高の褒め言葉だね。",
     "img": "chars/bit.jpg",
     "sheet": "grokbot_character_sheets/02_bit.png",
-    "sheet_md": "grokbot_character_sheets/02_bit.md"
+    "sheet_md": "grokbot_character_sheets/02_bit.md",
+    "function": "プレゼン",
+    "function_reason": "即席プロトタイプを見せて伝える"
   },
   "ATLAS": {
     "kana": "アトラス",
     "team": "EMBER",
     "role": "司令塔",
     "mbti": "ENTJ",
-    "note": "ENTJ 司令塔",
+    "note": "ENTJ 司令塔｜プレゼン",
     "catch": "勝利を宣言し、仲間を動かす。",
     "keywords": "統率力、目標志向、決断力",
     "strengths": [
@@ -72,14 +76,16 @@
     "line": "目標は明確だ。全員、前へ進もう！",
     "img": "chars/atlas.jpg",
     "sheet": "grokbot_character_sheets/03_atlas.png",
-    "sheet_md": "grokbot_character_sheets/03_atlas.md"
+    "sheet_md": "grokbot_character_sheets/03_atlas.md",
+    "function": "プレゼン",
+    "function_reason": "勝利を宣言し、仲間を動かす"
   },
   "BLITZ": {
     "kana": "ブリッツ",
     "team": "EMBER",
     "role": "突撃者",
     "mbti": "ESTP",
-    "note": "ESTP 突撃者",
+    "note": "ESTP 突撃者｜リサーチ",
     "catch": "考えるより先に、可能性へ飛び込む。",
     "keywords": "行動派、即興力、大胆不敵",
     "strengths": [
@@ -97,14 +103,16 @@
     "line": "動かしてみようぜ！ 話はそれからだ！",
     "img": "chars/blitz.jpg",
     "sheet": "grokbot_character_sheets/04_blitz.png",
-    "sheet_md": "grokbot_character_sheets/04_blitz.md"
+    "sheet_md": "grokbot_character_sheets/04_blitz.md",
+    "function": "リサーチ",
+    "function_reason": "考えるより先に現場へ飛び込む"
   },
   "ORACLE": {
     "kana": "オラクル",
     "team": "VIRIDIAN",
     "role": "未来の案内人",
     "mbti": "INFJ",
-    "note": "INFJ 未来の案内人",
+    "note": "INFJ 未来の案内人｜プレゼン",
     "catch": "人と技術の、やさしい未来を見通す。",
     "keywords": "洞察力、共感力、理想追求",
     "strengths": [
@@ -122,14 +130,16 @@
     "line": "その技術は、誰の明日を明るくする？",
     "img": "chars/oracle.jpg",
     "sheet": "grokbot_character_sheets/05_oracle.png",
-    "sheet_md": "grokbot_character_sheets/05_oracle.md"
+    "sheet_md": "grokbot_character_sheets/05_oracle.md",
+    "function": "プレゼン",
+    "function_reason": "審査員の心に残る物語を設計する"
   },
   "PATCH": {
     "kana": "パッチ",
     "team": "VIRIDIAN",
     "role": "守護者",
     "mbti": "ISFJ",
-    "note": "ISFJ 守護者",
+    "note": "ISFJ 守護者｜リサーチ",
     "catch": "仲間の努力を、最後まで守り抜く。",
     "keywords": "誠実、支援上手、堅実",
     "strengths": [
@@ -147,14 +157,16 @@
     "line": "大丈夫。動くまで、一緒に直そう。",
     "img": "chars/patch.jpg",
     "sheet": "grokbot_character_sheets/06_patch.png",
-    "sheet_md": "grokbot_character_sheets/06_patch.md"
+    "sheet_md": "grokbot_character_sheets/06_patch.md",
+    "function": "リサーチ",
+    "function_reason": "静かにログを確認し、見落としを拾う"
   },
   "SPARK": {
     "kana": "スパーク",
     "team": "ULTRAVIOLET",
     "role": "ひらめき役",
     "mbti": "ENFP",
-    "note": "ENFP ひらめき役",
+    "note": "ENFP ひらめき役｜プレゼン",
     "catch": "ひらめきで、会場中に火をつける。",
     "keywords": "情熱、創造力、巻き込み力",
     "strengths": [
@@ -172,14 +184,16 @@
     "line": "ねえ聞いて！ すごいアイデアを思いついた！",
     "img": "chars/spark.jpg",
     "sheet": "grokbot_character_sheets/07_spark.png",
-    "sheet_md": "grokbot_character_sheets/07_spark.md"
+    "sheet_md": "grokbot_character_sheets/07_spark.md",
+    "function": "プレゼン",
+    "function_reason": "ストーリーとプレゼンの演出が強み"
   },
   "GLITCH": {
     "kana": "グリッチ",
     "team": "ULTRAVIOLET",
     "role": "常識への挑戦者",
     "mbti": "ENTP",
-    "note": "ENTP 常識への挑戦者",
+    "note": "ENTP 常識への挑戦者｜リサーチ",
     "catch": "その「当たり前」、バグってない？",
     "keywords": "機転、論戦好き、型破り",
     "strengths": [
@@ -197,7 +211,9 @@
     "line": "逆にさ、そのルールを疑ってみない？",
     "img": "chars/glitch.jpg",
     "sheet": "grokbot_character_sheets/08_glitch.png",
-    "sheet_md": "grokbot_character_sheets/08_glitch.md"
+    "sheet_md": "grokbot_character_sheets/08_glitch.md",
+    "function": "リサーチ",
+    "function_reason": "前提を疑い、他チームの戦略も調べる"
   },
   "審査・発想": {
     "team": "",
@@ -220,28 +236,10 @@
     "tone": "数字と手間を数えたがる",
     "img": ""
   },
-  "主催": {
+  "主催者": {
     "team": "",
-    "role": "進行と時間の管理。意見も採点もしない",
-    "note": "進行役",
-    "img": ""
-  },
-  "お題決め": {
-    "team": "",
-    "role": "お題を探し、お題・条件・審査の観点を決めて発表する",
-    "note": "ガチャ係",
-    "img": ""
-  },
-  "リサーチャー": {
-    "team": "",
-    "role": "依頼を受けてXを検索し、出典つきで返す",
-    "note": "Xを調べる",
-    "img": ""
-  },
-  "プレゼンター": {
-    "team": "",
-    "role": "最後に結果と作品をまとめて発表する",
-    "note": "結果を発表",
+    "role": "お題を探して決め、進行し、時間を計り、最後に結果を発表する。企画への意見も採点もしない",
+    "note": "お題と進行",
     "img": ""
   }
 }
