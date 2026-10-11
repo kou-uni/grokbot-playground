@@ -45,5 +45,18 @@ async function boot(query){
  sw.document.querySelector('.artifact-tabs button:last-child').click();assert.match(sw.document.querySelector('.artifact-title').textContent,/リレー/);
  sw.document.querySelector('.image-button').click();assert.ok(sw.document.querySelector('.project-full'));
  assert.deepEqual(saved.errors,[]);saved.close();
+ const live=await boot('');const lw=live.w;
+ lw.fetch=async()=>({ok:true,text:async()=>''});
+ await lw.proxyPoll();
+ assert.equal(lw.eval('liveOk'),true,'healthy proxy sets live status');
+ lw.eval('es.onerror()');
+ assert.equal(lw.eval('sseOk'),false,'failed stream enables proxy fallback');
+ assert.equal(lw.eval('liveOk'),true,'stream failure must not override a healthy proxy');
+ assert.equal(lw.document.querySelector('#live').textContent,'ライブ');
+ lw.fetch=async()=>({ok:false,status:503});
+ await lw.proxyPoll();
+ assert.equal(lw.eval('liveOk'),false,'failed proxy still reports a real outage');
+ assert.deepEqual(live.errors,[]);live.close();
+
  console.log('PASS: 4-team demo, no spoilers, idea effects, phase-specific votes, winner, scrub/resume, safe URLs, XSS, character modal, 43-event legacy replay, 10–11 scores, screenshot showcase.');
 })().catch(e=>{console.error(e);process.exit(1)});

@@ -577,7 +577,8 @@ function connect() {
   es = new EventSource(`https://ntfy.sh/${encodeURIComponent(topic)}/sse?since=${lastNtfyId || "all"}`);
   es.onopen = () => { sseOk = true; setLive(true); };
   es.onmessage = e => { parseLines(e.data, "auto"); drawTimer ||= setTimeout(draw, 80); };
-  es.onerror = () => { sseOk = false; setLive(false); es.close(); setTimeout(connect, 15000); };
+  // A failed direct stream does not mean the proxy fallback is offline.
+  es.onerror = () => { sseOk = false; es.close(); setTimeout(connect, 15000); };
 }
 async function proxyPoll() {
   if (!sseOk) {
