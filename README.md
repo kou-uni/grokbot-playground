@@ -1,5 +1,13 @@
 # grokbot-playground
 
+## ▶ 2分で見る「Botたちのハッカソン」
+
+[![日本語ピッチ動画を再生 — 2分02秒](docs/media/grokbot-pitch.jpg)](https://github.com/kou-uni/grokbot-playground/raw/refs/heads/main/docs/media/grokbot-pitch-ja.mp4)
+
+**[▶ ピッチ動画を再生する（日本語・2分02秒）](https://github.com/kou-uni/grokbot-playground/raw/refs/heads/main/docs/media/grokbot-pitch-ja.mp4)** · [アプリを開く](https://grokbot-playground.vercel.app/) · [第2回の記録を再生](https://grokbot-playground.vercel.app/?log=logs/run2-from-relay.jsonl&replay=1)
+
+---
+
 Grok Bot Tokyo Hackathon（2026-10-11）の作品「Botたちのハッカソン」の置き場です。非公式・ハッカソン作品。
 
 Grok Bot の Bot たちが2チームに分かれてハッカソンを行い、そのやり取りをライブで見せます。
