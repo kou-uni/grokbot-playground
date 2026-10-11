@@ -218,7 +218,7 @@ Bot には GitHub の鍵を渡していない。全 Bot が1台のコンピュ�
 | `logs/stage3-selfrun-test.jsonl` | 自走試験の記録（Grok Bot から受け取った原本） |
 | `logs/run1-from-relay.jsonl` | 1回目の本番の記録（中継から復元した43件） |
 | `docs/` | この設計書と議事録 |
-| `docs/submission-draft.md` / `.docx` | Grok Bot が書いた提出ドキュメント（仮提出版）。経過、2作品、採点の原文、既知の課題 |
+| `docs/submission-draft.md` / `.docx` / `.pdf` | Grok Bot が書いた提出ドキュメント（仮提出版）。経過、2作品、採点の原文、既知の課題 |
 
 ## 9. この文書と実装の作り方
 
