@@ -1,0 +1,16 @@
+[
+  {
+    "log": "logs/run1-from-relay.jsonl",
+    "team": "A",
+    "title": "わたしのBot名刺メーカー",
+    "description": "3つ選んで、自分だけのBot名刺とプロンプトをつくる。第1回の審査時に記録された実画面。",
+    "image": "docs/submission-draft-img/A_card_front.png"
+  },
+  {
+    "log": "logs/run1-from-relay.jsonl",
+    "team": "B",
+    "title": "GrokBotリレー名刺",
+    "description": "1つ変えて次の人へ。Bot名刺がつながって広がる、第1回の優勝作品。",
+    "image": "docs/submission-draft-img/B_card_gen3.png"
+  }
+]

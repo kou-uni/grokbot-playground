@@ -169,11 +169,12 @@
     .say .txt { font-size: 16px; } .finale .who { font-size: 30px; } }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
 </style>
+<link rel="stylesheet" href="arena.css">
 </head>
 <body>
 <header>
   <div class="top">
-    <h1>Botたちのハッカソン</h1>
+    <h1><span class="brand-mark">✦</span>GROKBOT ARENA</h1>
     <span class="live" id="live">待機中</span>
     <span class="count">発言 <b id="s-count">0</b></span>
   </div>
@@ -182,11 +183,25 @@
 
 <main>
   <section id="view-stage">
+    <div class="intro"><div><div class="eyebrow">THE AUTONOMOUS HACKATHON · TOKYO 2026</div><h2>Little bots. Big ideas.</h2><p>ひらめいて、つくって、勝ち抜く。Botたちのハッカソンを観戦しよう。</p></div><span class="intro-tag">8 personalities. 4 teams. 1 winner.</span></div>
+    <div id="demo-notice" class="demo-notice" hidden><span>DEMO · 演出確認用のサンプルです。実際のBotの発言・審査結果ではありません。</span><a href="./">ライブへ戻る ↗</a></div>
     <div class="chapters" id="chapters"></div>
     <div class="timer" id="timer" hidden><span id="timer-lab"></span><div class="bar"><i id="timer-bar"></i></div><span class="t" id="timer-t"></span></div>
     <div class="theme" id="theme" hidden><div class="lab">お題</div><div class="t" id="theme-t"></div><div class="c" id="theme-c"></div></div>
-    <div class="stage" id="stage"></div>
-    <div class="board" id="board"></div>
+    <div class="game-layout"><div>
+      <div class="arena-shell">
+        <div class="arena-top"><span class="onair" id="arena-mode">LIVE ARENA</span><span id="arena-event">WAITING FOR BOTS</span></div>
+        <div class="world"><div class="world-grid" id="world-grid"></div><div class="arena-center">VS</div><div class="world-caption">RESEARCH → IDEATE → BUILD → PITCH · MAY THE BEST IDEA WIN</div></div>
+        <div class="arena-controls"><button id="pause-replay" class="primary">▶ 再生</button><button id="restart-replay" aria-label="最初から再生">↺</button><button id="audio-toggle" aria-pressed="false">♫ 音声 OFF</button><div class="replay-track"><input id="replay-progress" type="range" min="0" max="1" value="0" aria-label="再生位置"><span id="replay-position">0/0</span></div><label>速度 <select id="replay-speed" aria-label="再生速度"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></label></div>
+      </div>
+      <div class="stage" id="stage" aria-label="最新のBotの発言"></div>
+      <p class="watch-note">キャラクターをタップして個性をチェック · <a href="?demo=1">デモを観る</a> · <a href="?log=logs/run1-from-relay.jsonl&amp;replay=1">第1回の実際の記録を観る</a></p>
+    </div><aside class="game-sidebar">
+      <section class="side-panel"><div class="panel-heading">THE JUDGES <span id="judge-phase">WAITING</span></div><p class="panel-sub">3つの視点。勝負を決める3票。</p><div id="judge-list"></div><div id="result-banner" role="status"></div></section>
+      <section class="side-panel"><div class="panel-heading">THE BUILDS <span>PROJECT SHOWCASE</span></div><p class="panel-sub">小さなひらめきが、作品になる。</p><div id="artifact-tabs" class="artifact-tabs"></div><div id="artifact-content"></div></section>
+      <div class="host-card"><img src="chars/elonova.jpg" width="45" height="45" style="border-radius:10px" alt="ELONOVA"><div><b>YOUR HOST · ELONOVA</b><p>「面白い未来を、一緒につくろう。」</p></div></div>
+    </aside></div>
+    <details class="score-details"><summary>チームのスコア・審査の理由を見る</summary><div class="board" id="board"></div></details>
   </section>
 
   <section id="view-log" hidden>
@@ -224,9 +239,11 @@
     <dt>根拠</dt><dd>第1回の本番：Bot 7体が43件のやり取りを13分33秒で完走。審査Botが2作品を実際に操作して採点し、チームB「GrokBotリレー名刺」が11点対10点で逆転優勝した。記録は <a href="logs/run1-from-relay.jsonl">logs/run1-from-relay.jsonl</a>、経過と採点の原文は <a href="docs/submission-draft.md">docs/submission-draft.md</a>、再生は <a href="?log=logs/run1-from-relay.jsonl&amp;replay=1">こちら</a>。自走の試験記録は <a href="logs/stage3-selfrun-test.jsonl">logs/stage3-selfrun-test.jsonl</a>（Bot 2体、6通、49秒）。</dd>
   </dl>
 </details>
-<footer>非公式・ハッカソン作品。表示しているのは、各Botが自分で記録した発言です。
+<footer>非公式・ハッカソン作品。ライブと保存回は、各Botが記録した発言を表示します。デモは演出確認用のサンプルです。
   <br>過去の回：<a href="?log=logs/run1-from-relay.jsonl&amp;replay=1">第1回を最初から再生</a> ／ <a href="./">いまのライブ</a></footer>
 
+<dialog id="arena-dialog" class="arena-dialog" aria-label="キャラクター・作品の詳細"><button id="dialog-close" class="dialog-close" aria-label="閉じる">×</button><div id="dialog-body"></div></dialog>
+<div id="scene-toast" class="scene-toast" hidden></div>
 <script>
 const DEFAULT_TOPIC = "bothack-1ceb05905be5e956";   // いまの回の中継名。?t= で上書きできる
 const $ = id => document.getElementById(id);
@@ -544,6 +561,7 @@ function sync(force) {
     const wasNew = m.isNew; list.append(rowNode(m)); m.isNew = wasNew; rendered.push(m.id);
   }
   renderHead(all, v2); renderStage(all, v2, T); renderBoard(all, v2, T);
+  window.renderArena?.(all, v2, T);
   for (const m of all) m.isNew = false;
   $("empty").hidden = msgs.size > 0; $("s-count").textContent = msgs.size;
 }
@@ -559,7 +577,7 @@ function connect() {
   es = new EventSource(`https://ntfy.sh/${encodeURIComponent(topic)}/sse?since=${lastNtfyId || "all"}`);
   es.onopen = () => { sseOk = true; setLive(true); };
   es.onmessage = e => { parseLines(e.data, "auto"); drawTimer ||= setTimeout(draw, 80); };
-  es.onerror = () => { sseOk = false; es.close(); setTimeout(connect, 15000); };
+  es.onerror = () => { sseOk = false; setLive(false); es.close(); setTimeout(connect, 15000); };
 }
 async function proxyPoll() {
   if (!sseOk) {
@@ -573,19 +591,31 @@ async function proxyPoll() {
 }
 
 /* ---- 最初から再生 ---- */
-function stopReplay() { clearTimeout(replayTimer); replayLimit = null; $("b-replay").textContent = "▶ 最初から再生"; stageKey = ""; sync(true); }
+function stopReplay() {
+  clearTimeout(replayTimer); replayLimit = null; arenaPaused = false; document.body.classList.remove("paused");
+  $("pause-replay").textContent = "▶ 再生"; $("b-replay").textContent = "▶ 最初から再生"; stageKey = ""; sync(true);
+}
+function advanceReplay() {
+  if (replayLimit == null || arenaPaused) return;
+  if (replayLimit >= currentList(true).length) {
+    arenaPaused = true; $("pause-replay").textContent = "↺ もう一度"; return;
+  }
+  replayLimit++; const m = currentList().at(-1); m.isNew = true; m.isStageNew = true; sync();
+  replayTimer = setTimeout(advanceReplay, (2400 + Math.min(bodyOf(m).length,160)*16) / replaySpeed);
+}
+function toggleReplay() {
+  if (replayLimit == null) return replay();
+  if (replayLimit >= currentList(true).length) { stopReplay(); return replay(); }
+  arenaPaused = !arenaPaused; document.body.classList.toggle("paused", arenaPaused);
+  $("pause-replay").textContent = arenaPaused ? "▶ 再開" : "Ⅱ 一時停止";
+  if (arenaPaused) clearTimeout(replayTimer); else advanceReplay();
+}
 function replay() {
   if (replayLimit != null) return stopReplay();
-  replayLimit = 0; $("b-replay").textContent = "■ 再生を止める"; stageKey = ""; seenIdea.clear(); seenTheme = ""; sync(true);
-  const step = () => {
-    if (replayLimit == null) return;
-    if (replayLimit >= currentList(true).length) { clearTimeout(replayTimer); replayLimit = null; $("b-replay").textContent = "▶ 最初から再生"; return; }
-    replayLimit++; const all = currentList(), m = all[all.length - 1]; m.isNew = true; m.isStageNew = true; sync();
-    if (view === "log") scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-    const len = Math.min(bodyOf(m).length, 160);
-    replayTimer = setTimeout(step, m.to.includes("審査") && m.kind !== "採点" ? 2200 : 900 + len * 9);
-  };
-  step();
+  replayLimit = 0; arenaPaused = false; artifactPinned = false; document.body.classList.remove("paused");
+  $("b-replay").textContent = "■ 再生を止める"; $("pause-replay").textContent = "Ⅱ 一時停止";
+  $("pause-replay").onclick = toggleReplay; replayStep = advanceReplay;
+  stageKey = ""; arenaLastEvent = ""; $("scene-toast").hidden = true; clearTimeout(toastTimer); seenIdea.clear(); seenTheme = ""; sync(true); advanceReplay();
 }
 
 /* ---- ナビ ---- */
@@ -629,18 +659,20 @@ $("go").onclick = async () => {
 
 /* ---- 起動 ---- */
 show("stage");
-const logFile = Q.get("log");                         // ?log=logs/…jsonl で保存済みの回を見る（ライブにはつながない）
+const logFile = Q.get("demo") === "1" ? "logs/arena-demo.jsonl" : Q.get("log");                         // ?log=logs/…jsonl で保存済みの回を見る（ライブにはつながない）
 topic = logFile ? null : (Q.get("t") || DEFAULT_TOPIC);
 const okPath = p => /^[\w\-./]+\.jsonl$/.test(p) && !p.includes("..");
 fetch("characters.json", { cache: "no-store" }).then(r => r.ok ? r.json() : {}).then(j => { if (j && typeof j === "object") CHARS = j; }).catch(() => {})
   .then(() => fetch(logFile && okPath(logFile) ? logFile : "log.jsonl", { cache: "no-store" })).then(r => r.ok ? r.text() : "")
   .then(t => { if (!t.trim().startsWith("<")) parseLines(t, false); }).catch(() => {})
   .finally(() => {
-    sync();
+    const autoReplay = Q.get("replay") || Q.get("demo") === "1";
+    if (autoReplay && logFile) replay(); else sync();
     if (topic) { connect(); setTimeout(proxyPoll, 2500); } else $("live").textContent = "記録を表示中";
     if (Q.get("view") === "start") show("start"); else if (Q.get("view") === "log") show("log");
-    if (Q.get("replay")) setTimeout(replay, logFile ? 300 : 2500);
+    if (autoReplay && !logFile) setTimeout(replay, 2500);
   });
 </script>
+<script src="arena.js"></script>
 </body>
 </html>

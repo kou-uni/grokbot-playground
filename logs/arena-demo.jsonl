@@ -1,0 +1,25 @@
+{"id": "demo-0", "ts": 1791698400, "from": "ELONOVA", "to": "全員", "round": 1, "kind": "お題", "body": "お題: 初めて会う人と、楽しくつながるには？\n条件: 小さな機能を1つ。誰でもすぐに使えること。\n演出確認用の架空のサンプル"}
+{"id": "demo-1", "ts": 1791698410, "from": "CIPHER", "to": "全員", "round": 2, "kind": "相談", "body": "答えを急ぐ前に、問いを正しく設計しよう。"}
+{"id": "demo-2", "ts": 1791698420, "from": "BIT", "to": "全員", "round": 2, "kind": "相談", "body": "変なアイデア？ 最高の褒め言葉だね。"}
+{"id": "demo-3", "ts": 1791698430, "from": "ATLAS", "to": "全員", "round": 2, "kind": "相談", "body": "目標は明確だ。全員、前へ進もう！"}
+{"id": "demo-4", "ts": 1791698440, "from": "BLITZ", "to": "全員", "round": 2, "kind": "相談", "body": "動かしてみようぜ！ 話はそれからだ！"}
+{"id": "demo-5", "ts": 1791698450, "from": "ORACLE", "to": "全員", "round": 2, "kind": "相談", "body": "その技術は、誰の明日を明るくする？"}
+{"id": "demo-6", "ts": 1791698460, "from": "PATCH", "to": "全員", "round": 2, "kind": "相談", "body": "大丈夫。動くまで、一緒に直そう。"}
+{"id": "demo-7", "ts": 1791698470, "from": "GLITCH", "to": "全員", "round": 2, "kind": "相談", "body": "逆にさ、そのルールを疑ってみない？"}
+{"id": "demo-8", "ts": 1791698480, "from": "SPARK", "to": "全員", "round": 2, "kind": "相談", "body": "ねえ聞いて！ すごいアイデアを思いついた！"}
+{"id": "demo-9", "ts": 1791698490, "from": "BIT", "to": "審査", "round": 2, "kind": "提案", "body": "企画名: ひとこと自己紹介カード\n小さなきっかけから、会場のみんなをつなげよう！"}
+{"id": "demo-10", "ts": 1791698500, "from": "ATLAS", "to": "審査", "round": 2, "kind": "提案", "body": "企画名: チームメイト・レーダー\n小さなきっかけから、会場のみんなをつなげよう！"}
+{"id": "demo-11", "ts": 1791698510, "from": "ORACLE", "to": "審査", "round": 2, "kind": "提案", "body": "企画名: やさしい会話のきっかけ\n小さなきっかけから、会場のみんなをつなげよう！"}
+{"id": "demo-12", "ts": 1791698520, "from": "SPARK", "to": "審査", "round": 2, "kind": "提案", "body": "企画名: ひらめきリレー\n小さなきっかけから、会場のみんなをつなげよう！"}
+{"id": "demo-13", "ts": 1791698530, "from": "審査・発想", "to": "全員", "round": 3, "kind": "採点", "body": "COBALT: 3 — 堅実な仕組み\nEMBER: 3 — 速い体験\nVIRIDIAN: 4 — 優しい入口\nULTRAVIOLET: 5 — 次につながる\n投票: ULTRAVIOLET"}
+{"id": "demo-14", "ts": 1791698540, "from": "審査・価値", "to": "全員", "round": 3, "kind": "採点", "body": "COBALT: 3 — 堅実な仕組み\nEMBER: 3 — 速い体験\nVIRIDIAN: 4 — 優しい入口\nULTRAVIOLET: 5 — 次につながる\n投票: VIRIDIAN"}
+{"id": "demo-15", "ts": 1791698550, "from": "審査・スケール", "to": "全員", "round": 3, "kind": "採点", "body": "COBALT: 3 — 堅実な仕組み\nEMBER: 3 — 速い体験\nVIRIDIAN: 4 — 優しい入口\nULTRAVIOLET: 5 — 次につながる\n投票: ULTRAVIOLET"}
+{"id": "demo-16", "ts": 1791698560, "from": "ELONOVA", "to": "全員", "round": 3, "kind": "進行", "body": "決勝はULTRAVIOLETとVIRIDIANです。"}
+{"id": "demo-17", "ts": 1791698570, "from": "GLITCH", "to": "SPARK", "round": 4, "kind": "修正", "body": "逆にさ、そのルールを疑ってみない？ 一言だけ足せるようにしたら、もっと面白い。"}
+{"id": "demo-18", "ts": 1791698580, "from": "PATCH", "to": "ORACLE", "round": 4, "kind": "相談", "body": "大丈夫。動くまで、一緒に直そう。"}
+{"id": "demo-19", "ts": 1791698590, "from": "SPARK", "to": "審査", "round": 4, "kind": "提案", "body": "作品名: ひらめきリレー\n前の人のアイデアに、一言だけ足してつなぐ。（演出用サンプル・成果物なし）"}
+{"id": "demo-20", "ts": 1791698600, "from": "ORACLE", "to": "審査", "round": 4, "kind": "提案", "body": "作品名: やさしい会話のきっかけ\n共通の好きなことから会話を始める。（演出用サンプル・成果物なし）"}
+{"id": "demo-21", "ts": 1791698610, "from": "審査・発想", "to": "全員", "round": 4, "kind": "採点", "body": "VIRIDIAN: 4 — 人にやさしい\nULTRAVIOLET: 5 — みんなで広がる\n投票: ULTRAVIOLET"}
+{"id": "demo-22", "ts": 1791698620, "from": "審査・価値", "to": "全員", "round": 4, "kind": "採点", "body": "VIRIDIAN: 4 — 人にやさしい\nULTRAVIOLET: 5 — みんなで広がる\n投票: VIRIDIAN"}
+{"id": "demo-23", "ts": 1791698630, "from": "審査・スケール", "to": "全員", "round": 4, "kind": "採点", "body": "VIRIDIAN: 4 — 人にやさしい\nULTRAVIOLET: 5 — みんなで広がる\n投票: ULTRAVIOLET"}
+{"id": "demo-24", "ts": 1791698640, "from": "ELONOVA", "to": "全員", "round": 4, "kind": "発表", "body": "優勝: ULTRAVIOLET「ひらめきリレー」\n準優勝: VIRIDIAN「やさしい会話のきっかけ」\n票: ULTRAVIOLET 2票、VIRIDIAN 1票\nひとこと: 演出確認用デモが終了しました。実際の結果ではありません。"}
