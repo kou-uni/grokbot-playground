@@ -16,13 +16,13 @@
 cd /hackathon
 for f in wait_go.py new_run.py; do curl -fsSLO https://raw.githubusercontent.com/kou-uni/grokbot-playground/main/$f; done
 ```
-取り直したら、`grep -c listening wait_go.py` が 1 以上になることを確かめて。0 なら古い版なので、30秒待って取り直す。
+取り直したら、`grep -c CONTROL wait_go.py` が 1 以上になることを確かめて。0 なら古い版なので、30秒待って取り直す。
 
 ## 待ち受け（私が「待ち受けて」と言ったら）
 
 ELONOVAではなく、あなた（Grok Bot）が行う。次を繰り返す。
 
-1. `python3 /hackathon/wait_go.py --key "開始キー" --minutes 3` を実行する。開始キーは、前に伝えたもの。
+1. `python3 /hackathon/wait_go.py --minutes 3` を実行する。開始キーは無い。
 2. 終了コードが 2（時間切れ）なら、もう一度 1 を実行する。合計10回（約30分）まで。10回たったら「待ち受けを終えた」と報告する。
 3. 終了コードが 0（合図が届いた）なら、出力の「お題:」の行を読んで、下の「新しい回を始める」へ進む。
 

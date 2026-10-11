@@ -2,25 +2,24 @@
 """画面の「はじめる」からの合図を待つ。届いたら内容を表示して終わる。
 
 使い方:
-  python3 wait_go.py --key "開始キー" --minutes 3
+  python3 wait_go.py --minutes 3
 
-- 開始キーから合図用の名前を計算し、そこへ届く最初の合図を待つ。
+- 合図用の中継（下の CONTROL）へ届く最初の合図を待つ。開始キーは無い。
 - 待っている間、「待ち受け中」の知らせを画面へ送る（画面に、いま押せるかどうかが出る）。
 - 合図が届いたら、「受け取った」と画面へ返し、内容（お題の指定など）を表示して、終了コード 0 で終わる。
 - 時間内に届かなければ、終了コード 2 で終わる。
 中継は1本つなぎっぱなしで読む。何度も読みに行くと、中継の回数制限に当たって、発言の中継まで止まるため。
 """
 import argparse
-import hashlib
 import json
 import os
 import socket
 import sys
 import time
-import unicodedata
 import urllib.request
 
 BASE = "https://ntfy.sh/"
+CONTROL = "bothack-ctl-87a4909d3ffcf577"   # 画面（index.html）と同じ名前
 
 
 def post(topic, obj):
@@ -33,18 +32,16 @@ def post(topic, obj):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--key", required=True)
     p.add_argument("--minutes", type=float, default=3)
     p.add_argument("--dir", default=os.path.dirname(os.path.abspath(__file__)))
     a = p.parse_args()
 
-    key = unicodedata.normalize("NFKC", a.key).strip().lower()  # 画面側と同じ正規化
-    topic = "bothack-ctl-" + hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
+    topic = CONTROL
     seen_file = os.path.join(a.dir, ".go_seen")
     seen = set(open(seen_file).read().split()) if os.path.exists(seen_file) else set()
     start = int(time.time())
     deadline = start + int(a.minutes * 60)
-    print(f"合図を待っています（最長 {a.minutes:g} 分・照合コード {topic[-4:]}）", flush=True)
+    print(f"合図を待っています（最長 {a.minutes:g} 分）", flush=True)
     post(topic, {"type": "listening", "until": deadline})
     last_beat = time.time()
 

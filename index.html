@@ -160,6 +160,7 @@
   .listen i { width: 12px; height: 12px; border-radius: 50%; background: #B9B3A5; flex: none; }
   .listen.on { color: #166534; } .listen.on i { background: #16A34A; animation: beat .9s infinite; }
   .listen.off { color: #92400E; } .listen.off i { background: #D97706; }
+  .start .note { font-size: 13px; }
   .runsel { font: inherit; font-size: 14px; padding: 3px 8px; border-radius: 20px; background: transparent; color: var(--paper); border: 1px solid #3A4252; }
   .reel { height: 2.2em; font-size: 22px; font-weight: 800; margin: 18px auto 0; overflow: hidden; }
   .reel.spin span { display: block; animation: reel .12s linear infinite; }
@@ -208,18 +209,11 @@
       <p>お題を書くと、Botたちがそのお題でハッカソンを始めます。空のままなら、主催者BotがXの話題からお題を決めます。</p>
       <label class="theme-lab" for="f-theme">お題（空ならおまかせ・120字まで）</label>
       <textarea id="f-theme" maxlength="120" rows="2" placeholder="例：初めて会う人と、Botを通じて仲良くなれるものを作る"></textarea>
-      <div class="listen" id="listen"><i></i><span id="listen-t">開始キーを入れると、GrokBotが待ち受けているかが出ます</span></div>
+      <div class="listen" id="listen"><i></i><span id="listen-t">GrokBotが待ち受けているかを確かめています…</span></div>
       <button class="gacha" id="go">お題ガチャを回す</button>
       <div class="reel" id="reel"><span></span></div>
       <div class="status" id="go-status"></div>
-      <details class="ops" open>
-        <summary>運営用（開始キー）</summary>
-        <p>開始キーは、GrokBotと決めた合言葉です。知っている人だけが始められます。この画面には保存されません。</p>
-        <label for="f-key">開始キー</label>
-        <input type="password" id="f-key" autocomplete="off" autocapitalize="off" spellcheck="false">
-        <label style="font-weight:400"><input type="checkbox" id="f-show"> 開始キーを表示する</label>
-        <p>GrokBotが待ち受けていないときは、GrokBotに「待ち受けて」と送ってください。待ち受けなしで始めるなら、GrokBotに「開始」と送ります。</p>
-      </details>
+      <p class="note">GrokBotが待ち受けていないときは、GrokBotに「待ち受けて」と送ってください。</p>
     </div>
   </section>
 </main>
@@ -632,11 +626,7 @@ const bStart = el("button", "act", "はじめる"); bStart.dataset.v = "start"; 
 
 /* ---- はじめる：お題を載せて合図を送る ---- */
 const REEL = ["主催者ELONOVAを呼び出し中…", "4チームが集合中…", "審査員が席につきました…", "リサーチ担当がXを開きました…", "まもなく開幕…"];
-async function controlTopic(key) {
-  key = key.normalize("NFKC").trim().toLowerCase();   // 全角・大文字・前後の空白の違いで外れないようにする
-  const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key));
-  return "bothack-ctl-" + [...new Uint8Array(h)].slice(0, 8).map(b => b.toString(16).padStart(2, "0")).join("");
-}
+const CONTROL = "bothack-ctl-87a4909d3ffcf577";   // 合図用の中継の名前。wait_go.py と同じ
 // 合図用の中継を読む。まず自分のサーバー経由（会場の回線が制限されていても読める）。だめなら直接
 async function readControl(ct, sinceSec) {
   const since = Math.floor(Date.now() / 1000) - sinceSec, out = [];
@@ -647,10 +637,9 @@ async function readControl(ct, sinceSec) {
 }
 // GrokBotが待ち受け中か。待ち受けの知らせ（until）が、まだ先の時刻で、そのあとに受け取りが無ければ「待ち受け中」
 async function checkListening() {
-  const box = $("listen"), key = $("f-key").value.trim();
+  const box = $("listen");
   if (view !== "start") return;
-  if (!key) { box.className = "listen"; $("listen-t").textContent = "開始キーを入れると、GrokBotが待ち受けているかが出ます"; return; }
-  const ev = await readControl(await controlTopic(key), 240), now = Date.now() / 1000;
+  const ev = await readControl(CONTROL, 240), now = Date.now() / 1000;
   const beat = ev.filter(e => e.type === "listening").pop(), ack = ev.filter(e => e.type === "ack").pop();
   const on = beat && beat.until > now && !(ack && ack.time >= beat.time);
   if (!on && ack && now - ack.time < 240) { box.className = "listen on"; $("listen-t").textContent = "GrokBotが合図を受け取りました。議論が始まっています"; return; }
@@ -659,17 +648,14 @@ async function checkListening() {
     : "GrokBotは、いま待ち受けていません。GrokBotに「待ち受けて」と送ってください";
 }
 setInterval(checkListening, 8000);
-$("f-key").onchange = checkListening;
-$("f-show").onchange = e => { $("f-key").type = e.target.checked ? "text" : "password"; };
 $("f-theme").oninput = () => { $("go").textContent = $("f-theme").value.trim() ? "このお題で始める" : "お題ガチャを回す"; };
 $("go").onclick = async () => {
-  const key = $("f-key").value.trim(), theme = $("f-theme").value.trim().slice(0, 120), st = $("go-status"), reel = $("reel"), span = reel.firstChild;
+  const theme = $("f-theme").value.trim().slice(0, 120), st = $("go-status"), reel = $("reel"), span = reel.firstChild;
   $("go").disabled = true; st.textContent = ""; reel.classList.add("spin");
   let i = 0; const spin = setInterval(() => { span.textContent = REEL[i++ % REEL.length]; }, 420); span.textContent = REEL[0];
   let msg, ok = false;
-  if (!key) msg = "開始キーが入っていません。「運営用」に入れてください。";
-  else try {
-    const ct = await controlTopic(key), payload = { type: "go", ts: Math.floor(Date.now() / 1000), theme, text: "開始" };
+  try {
+    const ct = CONTROL, payload = { type: "go", ts: Math.floor(Date.now() / 1000), theme, text: "開始" };
     // まず自分のサーバー経由で送る。会場の回線が中継の回数制限に当たっていても通すため。だめなら直接送る
     const send = (url, body) => fetch(url, { method: "POST", body, headers: url.startsWith("/") ? { "Content-Type": "application/json" } : {}, signal: AbortSignal.timeout(8000) });
     let r = await send("/api/go", JSON.stringify({ topic: ct, payload })).catch(() => null);
@@ -679,7 +665,7 @@ $("go").onclick = async () => {
     const sent = Math.floor(Date.now() / 1000);
     for (let n = 0; n < 4 && !ok; n++) { await new Promise(r => setTimeout(r, 3000)); ok = (await readControl(ct, 60)).some(e => e.type === "ack" && e.time >= sent - 2); }
     msg = ok ? "GrokBotが合図を受け取りました。まもなく、ステージで第1章が始まります。"
-             : "合図は送りましたが、GrokBotの受け取りを確かめられませんでした（照合コード " + ct.slice(-4) + "）。GrokBotが待ち受けているかを確かめてください。";
+             : "合図は送りましたが、GrokBotの受け取りを確かめられませんでした。GrokBotに「待ち受けて」と送ってから、もう一度押してください。";
   } catch (e) { msg = "合図を送れませんでした（" + e.message + "）。GrokBotに「開始」と送ってください。"; }
   clearInterval(spin); reel.classList.remove("spin"); span.textContent = ""; st.textContent = msg; $("go").disabled = false; checkListening();
   if (ok) setTimeout(() => { if (logFile) location.href = "./"; else { runSel = null; show("stage"); } }, 2200);   // 保存した回を見ていたら、ライブへ移る
