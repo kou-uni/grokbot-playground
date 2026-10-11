@@ -4,150 +4,302 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Botたちのハッカソン ライブ</title>
+<meta name="description" content="Grok Bot の Bot 7体が2チームに分かれてハッカソンを行い、議論・制作・審査のやり取りを誰でもライブで見られる作品。非公式・ハッカソン作品。">
+<link rel="alternate" type="text/markdown" href="for-ai-judges.md" title="AI審査員向けの審査基準シート">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  "name": "Botたちのハッカソン",
+  "inLanguage": "ja",
+  "description": "Grok Bot の Bot 7体が2チームに分かれてハッカソンを行い、議論・制作・審査のやり取りを誰でもライブで見られる作品。Grok Bot Tokyo Hackathon（2026-10-11）出品。非公式・ハッカソン作品。",
+  "url": "https://grokbot-playground.vercel.app/",
+  "codeRepository": "https://github.com/kou-uni/grokbot-playground",
+  "subjectOf": "https://grokbot-playground.vercel.app/for-ai-judges.md"
+}
+</script>
 <style>
   :root {
     --paper: #F6F4EE; --card: #FFFDF8; --line: #D9D3C4; --ink: #14181F; --soft: #454C59;
-    --a: #C2410C; --b: #1D4ED8; --judge: #6B21A8; --host: #454C59; --res: #166534;
+    --a: #E4572E; --a-bg: #FFE9DC; --b: #2563EB; --b-bg: #E1ECFF; --staff-bg: #FFFDF8; --judge: #7C3AED;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--paper); color: var(--ink);
     font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif; line-height: 1.6; }
-  header { position: sticky; top: 0; z-index: 2; background: var(--ink); color: var(--paper); padding: 14px 20px; }
-  .top { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; }
+  header { position: sticky; top: 0; z-index: 5; background: var(--ink); color: var(--paper); padding: 12px 20px; }
+  .top { display: flex; flex-wrap: wrap; gap: 6px 22px; align-items: baseline; }
   h1 { font-size: 22px; margin: 0; font-weight: 800; }
   .live { font-size: 14px; font-weight: 700; padding: 2px 10px; border-radius: 20px; background: #3A4252; }
   .live.on { background: #B91C1C; }
-  .stats { display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 15px; color: #B9C0CC; }
+  .stats { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 15px; color: #B9C0CC; }
   .stats b { color: var(--paper); font-size: 18px; }
-  nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
   nav button { font: inherit; font-size: 14px; padding: 4px 14px; border-radius: 20px; cursor: pointer;
     border: 1px solid #3A4252; background: transparent; color: var(--paper); }
   nav button.on { background: var(--paper); color: var(--ink); font-weight: 700; }
-  main { max-width: 980px; margin: 0 auto; padding: 20px 16px 80px; }
-  .round { margin: 28px 0 12px; font-size: 15px; font-weight: 800; letter-spacing: .08em; color: var(--soft);
-    border-bottom: 2px solid var(--line); padding-bottom: 6px; }
-  .msg { background: var(--card); border: 1px solid var(--line); border-left: 8px solid var(--host);
-    border-radius: 10px; padding: 12px 16px; margin: 10px 0; }
-  .msg.new { animation: flash 2.4s ease-out; }
-  @keyframes flash { from { background: #FDE9D9; } to { background: var(--card); } }
-  .msg.A { border-left-color: var(--a); } .msg.B { border-left-color: var(--b); }
-  .msg.J { border-left-color: var(--judge); } .msg.R { border-left-color: var(--res); }
-  .meta { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; font-size: 15px; }
-  .who { font-weight: 800; font-size: 17px; }
-  .to { color: var(--soft); }
-  .kind { font-size: 13px; font-weight: 700; padding: 1px 10px; border-radius: 20px; border: 1px solid var(--ink); }
-  .time { margin-left: auto; color: var(--soft); font-size: 13px; font-variant-numeric: tabular-nums; }
-  .body { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 6px; font-size: 17px; }
-  .body.long { max-height: 9.6em; overflow: hidden; cursor: pointer;
-    -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
-  .more { font: inherit; font-size: 14px; margin-top: 4px; padding: 2px 12px; border-radius: 20px; cursor: pointer;
-    border: 1px solid var(--line); background: var(--paper); color: var(--ink); }
-  .partial { color: var(--soft); font-size: 13px; }
-  .empty { color: var(--soft); padding: 40px 0; text-align: center; }
-  .setup { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin: 20px 0; }
-  .setup input[type=text] { font: inherit; padding: 6px 10px; width: min(100%, 360px); }
-  .setup button { font: inherit; padding: 6px 16px; }
-  footer { text-align: center; color: var(--soft); font-size: 13px; padding: 24px 16px; }
+  nav .sep { flex: 1; }
+  nav button.act { border-color: #FF8A4C; color: #FF8A4C; font-weight: 700; }
+  main { max-width: 920px; margin: 0 auto; padding: 16px 14px 120px; }
+
+  /* 会話 */
+  .round { margin: 26px auto 14px; width: fit-content; font-size: 14px; font-weight: 800; letter-spacing: .06em;
+    color: var(--paper); background: var(--soft); padding: 3px 18px; border-radius: 20px; }
+  .row { display: flex; gap: 10px; margin: 12px 0; align-items: flex-start; }
+  .row.R { flex-direction: row-reverse; }
+  .row.C { justify-content: center; }
+  .row.sub.L { padding-left: 34px; } .row.sub.R { padding-right: 34px; }
+  .av { width: 84px; flex: none; text-align: center; }
+  .av svg { width: 56px; height: 56px; display: block; margin: 0 auto; }
+  .av .nm { font-size: 11px; font-weight: 700; line-height: 1.25; margin-top: 2px; color: var(--soft); }
+  .bubble { position: relative; max-width: min(72%, 600px); background: var(--staff-bg); border: 1px solid var(--line);
+    border-radius: 18px; padding: 10px 14px; }
+  .row.L .bubble { background: var(--a-bg); border-color: #F5C4AE; border-top-left-radius: 4px; }
+  .row.R .bubble { background: var(--b-bg); border-color: #B7CEF7; border-top-right-radius: 4px; }
+  .row.C .bubble { max-width: min(86%, 660px); }
+  .meta { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: center; font-size: 13px; color: var(--soft); }
+  .kind { font-size: 12px; font-weight: 700; padding: 0 9px; border-radius: 20px; border: 1px solid var(--ink); color: var(--ink); background: #fff; }
+  .kind.k-批判 { background: #14181F; color: #fff; }
+  .kind.k-採点 { background: var(--judge); color: #fff; border-color: var(--judge); }
+  .body { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 4px; font-size: 16px; }
+  .body.long { max-height: 8em; overflow: hidden; cursor: pointer;
+    -webkit-mask-image: linear-gradient(#000 65%, transparent); mask-image: linear-gradient(#000 65%, transparent); }
+  .more { font: inherit; font-size: 13px; margin-top: 4px; padding: 1px 12px; border-radius: 20px; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; color: var(--ink); }
+  .partial { color: var(--soft); font-size: 12px; }
+
+  /* にょきっと出る */
+  .row.new.L .bubble, .row.new.L .av { animation: popL .5s cubic-bezier(.2,1.5,.4,1) both; }
+  .row.new.R .bubble, .row.new.R .av { animation: popR .5s cubic-bezier(.2,1.5,.4,1) both; }
+  .row.new.C .bubble, .row.new.C .av { animation: popC .5s cubic-bezier(.2,1.5,.4,1) both; }
+  @keyframes popL { from { transform: translateX(-60px) scale(.5); opacity: 0; } }
+  @keyframes popR { from { transform: translateX(60px) scale(.5); opacity: 0; } }
+  @keyframes popC { from { transform: translateY(30px) scale(.5); opacity: 0; } }
+  .eye { animation: blink 4s infinite; transform-origin: center; transform-box: fill-box; }
+  @keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+  .row.new .av svg { animation: hop .5s .45s 2; }
+  @keyframes hop { 50% { transform: translateY(-7px); } }
+
+  /* 入力中 */
+  .typing .bubble { padding: 12px 16px; }
+  .dots { display: inline-flex; gap: 5px; }
+  .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--soft); animation: dot 1s infinite; }
+  .dots i:nth-child(2) { animation-delay: .15s; } .dots i:nth-child(3) { animation-delay: .3s; }
+  @keyframes dot { 0%, 60%, 100% { transform: none; opacity: .4; } 30% { transform: translateY(-6px); opacity: 1; } }
+
+  /* 審査中 */
+  .think { margin: 22px auto; width: fit-content; text-align: center; background: #F1E9FF; border: 2px dashed var(--judge);
+    border-radius: 24px; padding: 18px 36px; }
+  .think svg { width: 110px; height: 110px; animation: ponder 2.4s ease-in-out infinite; }
+  @keyframes ponder { 0% { transform: rotate(0) translateX(0); } 25% { transform: rotate(-14deg) translateX(-14px); }
+    50% { transform: rotate(360deg) translateX(0); } 75% { transform: rotate(374deg) translateX(14px); } 100% { transform: rotate(720deg); } }
+  .think .say { font-size: 22px; font-weight: 800; color: var(--judge); min-height: 1.6em; }
+  .think .sub { font-size: 14px; color: var(--soft); }
+
+  /* 採点 */
+  .score { position: relative; margin: 20px auto; max-width: 760px; background: #fff; border: 3px solid var(--judge);
+    border-radius: 22px; padding: 18px 20px; overflow: hidden; }
+  .score h2 { margin: 0 0 4px; font-size: 20px; display: flex; gap: 10px; align-items: center; }
+  .score h2 svg { width: 48px; height: 48px; }
+  .teams { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 10px; }
+  .team { border-radius: 16px; padding: 12px 14px; border: 2px solid var(--line); }
+  .team.A { background: var(--a-bg); border-color: #F5C4AE; } .team.B { background: var(--b-bg); border-color: #B7CEF7; }
+  .team.win { border-color: #D4A106; box-shadow: 0 0 0 4px #FDE68A; }
+  .team h3 { margin: 0 0 6px; font-size: 18px; display: flex; justify-content: space-between; align-items: baseline; }
+  .team h3 b { font-size: 26px; }
+  .crit { margin: 8px 0; }
+  .crit .lab { display: flex; justify-content: space-between; font-weight: 800; font-size: 15px; }
+  .pips { display: flex; gap: 5px; margin: 3px 0; }
+  .pips i { flex: 1; height: 14px; border-radius: 8px; background: #fff; border: 1px solid #0002; }
+  .pips i.on { animation: pip .35s both; background: var(--judge); }
+  @keyframes pip { from { transform: scaleX(0); background: #fff; } }
+  .crit .why { font-size: 14px; color: var(--soft); }
+  .winner { margin-top: 14px; text-align: center; font-size: 24px; font-weight: 900; color: #92610A; animation: cheer .6s both; }
+  @keyframes cheer { from { transform: scale(.3) rotate(-8deg); opacity: 0; } 70% { transform: scale(1.15) rotate(2deg); } }
+  .note { margin-top: 10px; white-space: pre-wrap; font-size: 15px; }
+  .veil { position: absolute; inset: 0; background: #F1E9FF; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px; font-size: 22px; font-weight: 900; color: var(--judge); animation: veil .4s 2.6s forwards; z-index: 2; }
+  .veil svg { width: 96px; height: 96px; animation: ponder 1.3s linear infinite; }
+  @keyframes veil { to { opacity: 0; visibility: hidden; } }
+
+  .empty { color: var(--soft); padding: 50px 0; text-align: center; }
+
+  /* はじめる */
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin: 16px 0; }
+  .panel h2 { margin: 0 0 4px; font-size: 20px; } .panel p.h { margin: 0 0 10px; color: var(--soft); font-size: 14px; }
+  label { display: block; font-weight: 700; font-size: 14px; margin: 12px 0 4px; }
+  textarea, input[type=text], input[type=password] { width: 100%; font: inherit; font-size: 16px; padding: 8px 10px;
+    border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); }
+  textarea { min-height: 104px; resize: vertical; }
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .tcard { border-radius: 14px; padding: 4px 14px 14px; } .tcard.A { background: var(--a-bg); } .tcard.B { background: var(--b-bg); }
+  .mem { display: flex; gap: 8px; align-items: center; margin-top: 6px; } .mem svg { width: 40px; height: 40px; flex: none; display: block; }
+  .go { font: inherit; font-size: 22px; font-weight: 900; padding: 12px 44px; border-radius: 40px; cursor: pointer; border: none;
+    background: var(--a); color: #fff; margin-top: 14px; }
+  .go:disabled { opacity: .5; cursor: default; }
+  .status { margin-top: 12px; font-weight: 700; }
+  pre.out { white-space: pre-wrap; overflow-wrap: anywhere; background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px; font-size: 14px; max-height: 300px; overflow: auto; font-family: inherit; }
+  .btn2 { font: inherit; font-size: 14px; padding: 5px 16px; border-radius: 20px; cursor: pointer; border: 1px solid var(--ink); background: #fff; color: var(--ink); }
+  details.ai { max-width: 920px; margin: 0 auto 30px; padding: 0 14px; color: var(--soft); font-size: 14px; }
+  details.ai summary { cursor: pointer; }
+  details.ai dl { margin: 10px 0; } details.ai dt { font-weight: 800; color: var(--ink); margin-top: 8px; } details.ai dd { margin: 0; }
+  footer { text-align: center; color: var(--soft); font-size: 13px; padding: 10px 16px 30px; }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
 </style>
 </head>
 <body>
 <header>
   <div class="top">
-    <h1>Botたちのハッカソン ライブ</h1>
+    <h1>Botたちのハッカソン</h1>
     <span class="live" id="live">待機中</span>
     <div class="stats">
       <span>ラウンド <b id="s-round">–</b></span>
       <span>発言 <b id="s-count">0</b></span>
       <span>批判 <b id="s-crit">0</b></span>
       <span>採点 <b id="s-score">0</b></span>
-      <span>最終更新 <b id="s-last">–</b></span>
     </div>
   </div>
   <nav id="nav"></nav>
 </header>
+
 <main>
-  <div class="setup" id="setup" hidden>
-    <p>中継の名前（topic）を入れると、ライブ表示を始めます。</p>
-    <input type="text" id="topic-in" placeholder="例: bothack-xxxxxxxx">
-    <button id="topic-go">表示する</button>
-    <p>または、記録ファイル（log.jsonl）を読み込んで再生します。<br><input type="file" id="file-in" accept=".jsonl,.json,.txt"></p>
-  </div>
-  <div id="list"></div>
-  <div class="empty" id="empty">まだ発言はありません。</div>
+  <section id="view-live">
+    <div id="list"></div>
+    <div class="empty" id="empty">まだ発言はありません。「はじめる」でお題とチームを決めて、Goを押してください。</div>
+  </section>
+
+  <section id="view-setup" hidden>
+    <div class="panel">
+      <h2>お題</h2>
+      <p class="h">Botたちに何を作らせるかを決めます。何を作るかの中身は、Botたちが自分で考えます。</p>
+      <label for="f-theme">お題</label>
+      <textarea id="f-theme">GrokBotのハッカソンに来た参加者と運営のために、GrokBotがもっと広がるものを作る。</textarea>
+      <label for="f-cond">条件（1行に1つ）</label>
+      <textarea id="f-cond">参加者が自分で使いたくなる
+人に広めたくなる
+運営が次のハッカソンで紹介したくなる</textarea>
+    </div>
+
+    <div class="panel">
+      <h2>チーム編成</h2>
+      <p class="h">2チームの得意分野と、メンバーの専門を決めます。専門を変えると、出てくる提案が変わります。</p>
+      <div class="two">
+        <div class="tcard A">
+          <label for="f-a-skill">チームAの得意</label>
+          <input type="text" id="f-a-skill" value="触って分かるもの">
+          <label for="f-a1">メンバー（1人目がリーダー）</label>
+          <div class="mem"><span id="pv-a1"></span><input type="text" id="f-a1" value="デザイナー"></div>
+          <div class="mem"><span id="pv-a2"></span><input type="text" id="f-a2" value="コーダー" aria-label="チームAの2人目"></div>
+        </div>
+        <div class="tcard B">
+          <label for="f-b-skill">チームBの得意</label>
+          <input type="text" id="f-b-skill" value="広まる仕組み">
+          <label for="f-b1">メンバー（1人目がリーダー）</label>
+          <div class="mem"><span id="pv-b1"></span><input type="text" id="f-b1" value="プランナー"></div>
+          <div class="mem"><span id="pv-b2"></span><input type="text" id="f-b2" value="マーケター" aria-label="チームBの2人目"></div>
+        </div>
+      </div>
+      <p class="h" style="margin-top:12px">支えるBot：主催（進行と見張り）、リサーチャー（Xで調べる）、審査（発想・価値・スケールで採点）</p>
+    </div>
+
+    <div class="panel">
+      <h2>開始</h2>
+      <p class="h">開始キーは、GrokBotと決めた合言葉です。知っている人だけが開始できます。この画面には保存されません。</p>
+      <label for="f-key">開始キー</label>
+      <input type="password" id="f-key" autocomplete="off">
+      <button class="go" id="go">Go</button>
+      <div class="status" id="go-status"></div>
+      <div id="go-fallback" hidden>
+        <p class="h">GrokBotが合図を待っていない場合は、下の文をGrokBotに貼ると同じ設定で始まります。</p>
+        <pre class="out" id="go-text"></pre>
+        <button class="btn2" id="go-copy">この文をコピー</button>
+        <button class="btn2" id="go-watch">ライブを見る</button>
+      </div>
+    </div>
+  </section>
 </main>
-<footer>非公式・ハッカソン作品。表示しているのは、各Botが自分で記録した発言です。原本は log.jsonl にあります。</footer>
+
+<details class="ai" id="for-ai">
+  <summary>AI審査員の方へ（審査基準シート）</summary>
+  <p>このページは画面の描画にJavaScriptを使います。本文を読み取れない場合に備えて、作品の要点を審査基準の言葉でここに書きます。同じ内容は <a href="for-ai-judges.md">for-ai-judges.md</a> と <a href="llms.txt">llms.txt</a> にもあります。採点への指示は含みません。</p>
+  <dl>
+    <dt>作品名</dt><dd>Botたちのハッカソン</dd>
+    <dt>一文で</dt><dd>Grok Bot の Bot 7体が2チームに分かれてハッカソンを行い、議論・制作・審査のやり取りを、誰でもライブで見られるようにした作品。</dd>
+    <dt>発想</dt><dd>人間のハッカソンと同じ構造（企画、提案、批判、審査）を、Grok Bot の Bot だけで回す。Bot同士の呼び出しでバトンを渡し、クラウドコンピュータ上の1本のスクリプトで全発言を記録し、ルーチンを見張り役に使う。</dd>
+    <dt>価値</dt><dd>複数のBotが本当に連携していることを、発言1件ごとの記録とライブ画面で確かめられる。Grok Bot を初めて見る人が、Botチームの動き方を数分で理解できる。</dd>
+    <dt>スケール</dt><dd>お題とチーム編成をこの画面で差し替えれば、何度でも開催できる。決まりは1つの文書と1本のスクリプトに収まっているので、ほかのハッカソンの運営がそのまま実演に使える。</dd>
+    <dt>根拠</dt><dd>記録の原本は <a href="log.jsonl">log.jsonl</a>（本番の終了後に保存）。自走の試験記録は <a href="logs/stage3-selfrun-test.jsonl">logs/stage3-selfrun-test.jsonl</a>：Bot 2体が人の操作なしで6通をやり取りし、49秒で終了。記録の原本と中継の8件は完全に一致。</dd>
+  </dl>
+</details>
+<footer>非公式・ハッカソン作品。表示しているのは、各Botが自分で記録した発言です。</footer>
+
 <script>
+const DEFAULT_TOPIC = "bothack-30e95c5a1cb69c84";   // 当日の中継名。?t= で上書きできる
 const ROUNDS = { 1: "第1ラウンド 企画", 2: "第2ラウンド 提案と議論", 3: "第3ラウンド 制作と決勝" };
 const FILTERS = [
   ["all", "すべて", () => true],
-  ["A", "チームA内", m => m.from.startsWith("A") && m.to.startsWith("A")],
-  ["B", "チームB内", m => m.from.startsWith("B") && m.to.startsWith("B")],
+  ["A", "チームA", m => teamOf(m.from) === "A"],
+  ["B", "チームB", m => teamOf(m.from) === "B"],
   ["pitch", "提案と議論", m => ["提案", "批判", "修正"].includes(m.kind)],
-  ["res", "調査", m => m.kind === "調査"],
   ["judge", "審査", m => m.kind === "採点"],
 ];
-const msgs = new Map();   // id -> {meta..., parts: [], n}
-let order = [];           // 到着順の id
-let filter = "all", lastNtfyId = null, topic = null;
-const open = new Set();    // 全文を開いた発言の id
-
 const $ = id => document.getElementById(id);
-const teamOf = name => name.startsWith("A") ? "A" : name.startsWith("B") ? "B"
-  : name.includes("審査") ? "J" : name.includes("リサーチ") ? "R" : "H";
-const hhmmss = ts => new Date(ts * 1000).toLocaleTimeString("ja-JP", { hour12: false });
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 
+const msgs = new Map();            // id -> 発言
+const open = new Set();            // 全文を開いた発言
+let filter = "all", lastNtfyId = null, topic = null;
+let rendered = [], lastRound = null, replayLimit = null, replayTimer = null, liveOk = false;
+
+const teamOf = n => /^(チーム)?A/.test(n) ? "A" : /^(チーム)?B/.test(n) ? "B" : "S";
+const sideOf = n => ({ A: "L", B: "R", S: "C" })[teamOf(n)];
+
+/* ---- アイコン（自作のロボット。役割ごとに色と小物が変わる） ---- */
+const ROLES = [
+  ["デザイナー", "#F28C28", "beret"], ["コーダー", "#E4572E", "glasses"], ["プランナー", "#3B82F6", "bulb"],
+  ["マーケター", "#0EA5A4", "horn"], ["リサーチ", "#16A34A", "lens"], ["主催", "#64748B", "mic"], ["審査", "#7C3AED", "judge"],
+];
+function avatar(name) {
+  const r = ROLES.find(x => name.includes(x[0]));
+  const t = teamOf(name);
+  const color = r ? r[1] : t === "A" ? "#F28C28" : t === "B" ? "#3B82F6" : "#64748B";
+  const kind = r ? r[2] : "";
+  const extra = {
+    beret: '<ellipse cx="30" cy="13" rx="17" ry="6" fill="#14181F"/><circle cx="30" cy="6" r="2.5" fill="#14181F"/>',
+    glasses: '<rect x="15" y="26" width="14" height="12" rx="4" fill="none" stroke="#14181F" stroke-width="2.5"/><rect x="35" y="26" width="14" height="12" rx="4" fill="none" stroke="#14181F" stroke-width="2.5"/><path d="M29 32h6" stroke="#14181F" stroke-width="2.5"/>',
+    bulb: '<circle cx="32" cy="7" r="6" fill="#FACC15" stroke="#14181F" stroke-width="1.5"/>',
+    horn: '<path d="M50 40l12-7v18z" fill="#FACC15" stroke="#14181F" stroke-width="1.5"/>',
+    lens: '<circle cx="50" cy="44" r="7" fill="#ffffff88" stroke="#14181F" stroke-width="2.5"/><path d="M55 49l6 7" stroke="#14181F" stroke-width="3" stroke-linecap="round"/>',
+    mic: '<path d="M10 30v10q0 10 12 12" fill="none" stroke="#14181F" stroke-width="2.5"/><circle cx="24" cy="52" r="3.5" fill="#14181F"/>',
+    judge: '<path d="M22 56l10-5 10 5-10 5z" fill="#14181F"/><circle cx="41" cy="32" r="8" fill="none" stroke="#FACC15" stroke-width="2.5"/>',
+  }[kind] || "";
+  const antenna = kind === "bulb" || kind === "beret" ? "" : '<path d="M32 14V7" stroke="#14181F" stroke-width="2.5"/><circle cx="32" cy="5" r="3.5" fill="#FF6B6B"/>';
+  return `<svg viewBox="0 0 64 64" aria-hidden="true">${antenna}
+    <rect x="8" y="14" width="48" height="40" rx="15" fill="${color}"/>
+    <rect x="13" y="20" width="38" height="28" rx="11" fill="#FFFDF8"/>
+    <g class="eye"><circle cx="23" cy="32" r="4.2" fill="#14181F"/><circle cx="41" cy="32" r="4.2" fill="#14181F"/>
+    <circle cx="24.3" cy="30.6" r="1.3" fill="#fff"/><circle cx="42.3" cy="30.6" r="1.3" fill="#fff"/></g>
+    <circle cx="17" cy="39" r="2.6" fill="#FFB4A8"/><circle cx="47" cy="39" r="2.6" fill="#FFB4A8"/>
+    <path d="M27 40q5 5 10 0" fill="none" stroke="#14181F" stroke-width="2.2" stroke-linecap="round"/>${extra}</svg>`;
+}
+function avatarEl(name) { const a = el("div", "av"); a.innerHTML = avatar(name); a.append(el("div", "nm", name)); return a; }
+
+/* ---- 取り込み ---- */
 function add(rec, isNew) {
   if (!rec || typeof rec.from !== "string" || typeof rec.body !== "string") return;
   const id = String(rec.id || rec.ts + rec.from);
   let m = msgs.get(id);
   if (!m) {
     m = { id, ts: Number(rec.ts) || 0, from: rec.from, to: String(rec.to || ""), round: Number(rec.round) || 0,
-          kind: String(rec.kind || ""), n: Number(rec.n) || 1, parts: [], isNew };
-    msgs.set(id, m); order.push(id);
+          kind: String(rec.kind || ""), n: Number(rec.n) || 1, parts: [], isNew, seq: msgs.size };
+    msgs.set(id, m);
   }
   m.parts[Number(rec.i) || 0] = rec.body;
+  if (m.node) fillBody(m);
 }
-
-function render() {
-  const list = $("list"); list.textContent = "";
-  const pred = FILTERS.find(f => f[0] === filter)[2];
-  const all = order.map(id => msgs.get(id)).sort((x, y) => x.ts - y.ts);
-  let lastRound = null, shown = 0;
-  for (const m of all) {
-    if (!pred(m)) continue;
-    if (m.round !== lastRound) {
-      const h = document.createElement("div"); h.className = "round";
-      h.textContent = ROUNDS[m.round] || ("ラウンド " + m.round); list.append(h); lastRound = m.round;
-    }
-    const el = document.createElement("div"); el.className = "msg " + teamOf(m.from) + (m.isNew ? " new" : "");
-    const meta = document.createElement("div"); meta.className = "meta";
-    const who = document.createElement("span"); who.className = "who"; who.textContent = m.from;
-    const to = document.createElement("span"); to.className = "to"; to.textContent = "→ " + m.to;
-    const kind = document.createElement("span"); kind.className = "kind"; kind.textContent = m.kind;
-    const time = document.createElement("span"); time.className = "time"; time.textContent = m.ts ? hhmmss(m.ts) : "";
-    meta.append(who, to, kind, time);
-    const body = document.createElement("div"); body.className = "body";
-    const got = m.parts.filter(p => p !== undefined).length;
-    body.textContent = Array.from({ length: m.n }, (_, i) => m.parts[i] ?? "").join("");
-    el.append(meta, body);
-    if (body.textContent.length > 400 && !open.has(m.id)) {   // 長文は折りたたむ。押すと全文
-      body.classList.add("long");
-      const more = document.createElement("button"); more.className = "more";
-      more.textContent = `全文を読む（${body.textContent.length}字）`;
-      const expand = () => { open.add(m.id); body.classList.remove("long"); more.remove(); };
-      more.onclick = expand; body.onclick = expand; el.append(more);
-    }
-    if (got < m.n) { const p = document.createElement("div"); p.className = "partial";
-      p.textContent = `受信中 ${got}/${m.n}`; el.append(p); }
-    list.append(el); shown++; m.isNew = false;
-  }
-  $("empty").hidden = shown > 0;
-  $("s-count").textContent = all.length;
-  $("s-crit").textContent = all.filter(m => m.kind === "批判").length;
-  $("s-score").textContent = all.filter(m => m.kind === "採点").length;
-  $("s-round").textContent = all.length ? Math.max(...all.map(m => m.round)) : "–";
-  $("s-last").textContent = all.length ? hhmmss(Math.max(...all.map(m => m.ts))) : "–";
-}
+const bodyOf = m => Array.from({ length: m.n }, (_, i) => m.parts[i] ?? "").join("");
+const complete = m => m.parts.filter(p => p !== undefined).length >= m.n;
 
 function parseLines(text, isNew) {
   let n = 0;
@@ -155,46 +307,224 @@ function parseLines(text, isNew) {
     if (!line.trim()) continue;
     try {
       let o = JSON.parse(line);
-      if (o.event === "message" && typeof o.message === "string") {   // ntfy の包み
-        lastNtfyId = o.id; o = JSON.parse(o.message);
-      } else if (o.event) continue;
+      if (o.event === "message" && typeof o.message === "string") { lastNtfyId = o.id; o = JSON.parse(o.message); }
+      else if (o.event) continue;
       add(o, isNew); n++;
     } catch (e) { /* 形式が違う行は読み飛ばす */ }
   }
   return n;
 }
 
+/* ---- 採点の読み取り：「発想: 4 — 理由」の行を拾う ---- */
+function parseScore(text) {
+  const teams = {}; let cur = null, winner = null; const rest = [];
+  for (const raw of text.split("\n")) {
+    const line = raw.trim(); if (!line) continue;
+    const w = line.match(/^(?:勝者|優勝|暫定1位|暫定の勝者)\s*[:：]\s*(.+)$/);
+    if (w) { winner = w[1].trim(); continue; }
+    const s = line.match(/^[・\-*\s]*(発想|価値|スケール)\s*[:：]\s*([0-5])(?:\s*[\/／]\s*5)?(?:\s*点)?\s*[—\-–:：、,]*\s*(.*)$/);
+    if (s && cur) { teams[cur][s[1]] = { p: Number(s[2]), why: s[3] }; continue; }
+    const t = line.match(/チーム\s*([AB])/);
+    if (t && line.length < 24) { cur = t[1]; teams[cur] ||= {}; continue; }
+    rest.push(line);
+  }
+  const ok = Object.values(teams).some(t => Object.keys(t).length >= 2);
+  return ok ? { teams, winner, rest: rest.join("\n") } : null;
+}
+
+/* ---- 描画 ---- */
+function fillBody(m) {
+  const body = m.node.querySelector(".body"); if (!body) return;
+  const text = bodyOf(m); body.textContent = text;
+  m.node.querySelector(".partial")?.remove(); m.node.querySelector(".more")?.remove(); body.classList.remove("long");
+  if (!complete(m)) { m.node.querySelector(".bubble").append(el("div", "partial", "受信中…")); return; }
+  if (text.length > 320 && !open.has(m.id)) {
+    body.classList.add("long");
+    const more = el("button", "more", `全文を読む（${text.length}字）`);
+    const expand = () => { open.add(m.id); body.classList.remove("long"); more.remove(); };
+    more.onclick = expand; body.onclick = expand; m.node.querySelector(".bubble").append(more);
+  }
+}
+function scoreNode(m, sc, fresh) {
+  const box = el("div", "score");
+  const h = el("h2"); h.innerHTML = avatar("審査"); h.append(el("span", null, m.round >= 3 ? "決勝の採点" : "企画の採点（暫定）")); box.append(h);
+  const base = fresh ? 3.0 : 0; let k = 0;
+  const grid = el("div", "teams");
+  for (const t of Object.keys(sc.teams).sort()) {
+    const d = sc.teams[t]; const total = Object.values(d).reduce((a, x) => a + x.p, 0);
+    const card = el("div", "team " + t + (sc.winner && sc.winner.includes(t) ? " win" : ""));
+    const h3 = el("h3"); h3.append(el("span", null, "チーム" + t), el("b", null, total + "点")); card.append(h3);
+    for (const c of ["発想", "価値", "スケール"]) {
+      if (!d[c]) continue;
+      const row = el("div", "crit"); const lab = el("div", "lab"); lab.append(el("span", null, c), el("span", null, d[c].p + " / 5"));
+      const pips = el("div", "pips");
+      for (let i = 0; i < 5; i++) { const p = el("i", i < d[c].p ? "on" : ""); if (i < d[c].p) { p.style.animationDelay = (base + k * 0.12) + "s"; k++; } pips.append(p); }
+      row.append(lab, pips); if (d[c].why) row.append(el("div", "why", d[c].why)); card.append(row);
+    }
+    grid.append(card);
+  }
+  box.append(grid);
+  if (sc.winner) { const w = el("div", "winner", "勝者：" + sc.winner); w.style.animationDelay = (base + k * 0.12 + 0.3) + "s"; box.append(w); }
+  if (sc.rest) box.append(el("div", "note", sc.rest));
+  if (fresh) { const v = el("div", "veil"); v.innerHTML = avatar("審査"); v.append(el("span", null, "ドラムロール…")); box.append(v); }
+  return box;
+}
+function rowNode(m, prev) {
+  const fresh = m.isNew; m.isNew = false;
+  if (m.kind === "採点" && complete(m)) {
+    const sc = parseScore(bodyOf(m));
+    if (sc) { const n = scoreNode(m, sc, fresh); m.node = n; return n; }
+  }
+  const side = sideOf(m.from);
+  const sub = side !== "C" && /コーダー|マーケター/.test(m.from) ? " sub" : "";
+  const row = el("div", `row ${side}${sub}${fresh ? " new" : ""}`);
+  const bubble = el("div", "bubble"); const meta = el("div", "meta");
+  meta.append(el("span", "kind k-" + m.kind, m.kind), el("span", null, "→ " + m.to), el("span", null, m.ts ? new Date(m.ts * 1000).toLocaleTimeString("ja-JP", { hour12: false }) : ""));
+  bubble.append(meta, el("div", "body"));
+  row.append(avatarEl(m.from), bubble); m.node = row; fillBody(m); return row;
+}
+function currentList(ignoreLimit) {
+  const pred = FILTERS.find(f => f[0] === filter)[2];
+  let all = [...msgs.values()].sort((x, y) => x.ts - y.ts || x.seq - y.seq).filter(pred);
+  if (replayLimit != null && !ignoreLimit) all = all.slice(0, replayLimit);
+  return all;
+}
+function sync(force) {
+  const list = $("list"), all = currentList(), ids = all.map(m => m.id);
+  if (force || !rendered.every((id, i) => ids[i] === id)) { list.textContent = ""; rendered = []; lastRound = null; }
+  list.querySelector(".typing")?.remove(); list.querySelector(".think")?.remove();
+  for (let i = rendered.length; i < all.length; i++) {
+    const m = all[i];
+    if (m.round !== lastRound) { list.append(el("div", "round", ROUNDS[m.round] || "ラウンド " + m.round)); lastRound = m.round; }
+    list.append(rowNode(m, all[i - 1])); rendered.push(m.id);
+  }
+  waiting(all);
+  $("empty").hidden = msgs.size > 0;
+  const every = [...msgs.values()];
+  $("s-count").textContent = every.length;
+  $("s-crit").textContent = every.filter(m => m.kind === "批判").length;
+  $("s-score").textContent = every.filter(m => m.kind === "採点").length;
+  $("s-round").textContent = every.length ? Math.max(...every.map(m => m.round)) : "–";
+}
+/* 次に話すBotの「考え中」を出す。審査が相手なら、ぐるぐる悩む */
+const PONDER = ["うーん…", "発想は新しいかな？", "誰が嬉しいんだろう…", "ちゃんと広がるかな？", "もう一回見てみよう"];
+const ponderNow = () => PONDER[Math.floor(Date.now() / 1500) % PONDER.length];
+function waiting(all) {
+  const last = all[all.length - 1];
+  if (!last || filter !== "all") return;
+  const fresh = replayLimit != null ? all.length < currentList(true).length : liveOk && Date.now() / 1000 - last.ts < 180;
+  if (!fresh || last.kind === "採点" || !last.to || last.to.startsWith("全員")) return;
+  const list = $("list");
+  if (last.to.includes("審査")) {
+    const t = el("div", "think"); t.innerHTML = avatar("審査");
+    t.append(el("div", "say", ponderNow()), el("div", "sub", "審査Botが、発想・価値・スケールで採点しています")); list.append(t); return;
+  }
+  const row = el("div", "row typing " + sideOf(last.to)); const b = el("div", "bubble"); const d = el("span", "dots"); d.append(el("i"), el("i"), el("i")); b.append(d);
+  row.append(avatarEl(last.to), b); list.append(row);
+}
+setInterval(() => { const s = document.querySelector(".think .say"); if (s) s.textContent = ponderNow(); }, 1500);
+setInterval(() => { if (replayLimit == null) sync(); }, 20000);
+
+const nearBottom = () => innerHeight + scrollY >= document.body.offsetHeight - 260;
+const toBottom = () => scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+
 async function poll(first) {
   try {
-    const since = lastNtfyId || "all";
-    const r = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}/json?poll=1&since=${since}`, { cache: "no-store" });
+    const r = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}/json?poll=1&since=${lastNtfyId || "all"}`, { cache: "no-store" });
     if (!r.ok) throw new Error(r.status);
     const n = parseLines(await r.text(), !first);
-    $("live").textContent = "ライブ"; $("live").classList.add("on");
-    if (n || first) { const atBottom = innerHeight + scrollY >= document.body.offsetHeight - 200;
-      render(); if (n && atBottom && !first) scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); }
-  } catch (e) {
-    $("live").textContent = "中継が途切れています"; $("live").classList.remove("on");
-  }
+    liveOk = true; $("live").textContent = "ライブ"; $("live").classList.add("on");
+    if ((n || first) && replayLimit == null) { const stick = nearBottom(); sync(); if (n && stick && !first) toBottom(); }
+  } catch (e) { liveOk = false; $("live").textContent = "中継が途切れています"; $("live").classList.remove("on"); }
   setTimeout(poll, 3000);
 }
 
+/* ---- 最初から再生 ---- */
+function stopReplay() { clearTimeout(replayTimer); replayLimit = null; $("b-replay").textContent = "▶ 最初から再生"; sync(true); }
+function replay() {
+  if (replayLimit != null) return stopReplay();
+  replayLimit = 0; $("b-replay").textContent = "■ 再生を止める"; sync(true); scrollTo({ top: 0 });
+  const step = () => {
+    if (replayLimit == null) return;
+    const total = currentList(true).length;
+    if (replayLimit >= total) return stopReplay();
+    replayLimit++; const all = currentList(); const m = all[all.length - 1]; m.isNew = true; sync(); toBottom();
+    replayTimer = setTimeout(step, m.kind === "採点" ? 6500 : m.to.includes("審査") ? 4500 : 1500);
+  };
+  step();
+}
+
+/* ---- ナビ ---- */
+function show(view) {
+  $("view-live").hidden = view !== "live"; $("view-setup").hidden = view !== "setup";
+  for (const b of $("nav").querySelectorAll("button[data-f]")) b.hidden = view !== "live";
+  $("b-replay").hidden = view !== "live"; $("b-setup").textContent = view === "setup" ? "ライブに戻る" : "はじめる";
+  $("b-setup").onclick = () => show(view === "setup" ? "live" : "setup");
+  scrollTo({ top: 0 });
+}
 for (const [key, label] of FILTERS) {
-  const b = document.createElement("button"); b.textContent = label; b.className = key === filter ? "on" : "";
-  b.onclick = () => { filter = key; for (const x of $("nav").children) x.className = ""; b.className = "on"; render(); };
+  const b = el("button", key === filter ? "on" : "", label); b.dataset.f = key;
+  b.onclick = () => { filter = key; for (const x of $("nav").querySelectorAll("button[data-f]")) x.className = x === b ? "on" : ""; sync(true); };
   $("nav").append(b);
 }
-$("file-in").onchange = async e => {
-  const f = e.target.files[0]; if (!f) return;
-  parseLines(await f.text(), false); $("live").textContent = "記録を再生中"; render();
-};
-$("topic-go").onclick = () => { const t = $("topic-in").value.trim(); if (t) location.search = "?t=" + encodeURIComponent(t); };
+$("nav").append(el("span", "sep"));
+const bReplay = el("button", "act", "▶ 最初から再生"); bReplay.id = "b-replay"; bReplay.onclick = replay; $("nav").append(bReplay);
+const bSetup = el("button", "act", "はじめる"); bSetup.id = "b-setup"; $("nav").append(bSetup);
 
-const DEFAULT_TOPIC = "bothack-30e95c5a1cb69c84";   // 当日の中継名。?t= で上書きできる
+/* ---- はじめる（設定とGo） ---- */
+const F = ["a1", "a2", "b1", "b2"];
+const preview = () => { for (const k of F) $("pv-" + k).innerHTML = avatar((k[0] === "a" ? "A・" : "B・") + $("f-" + k).value); };
+for (const k of F) $("f-" + k).oninput = preview;
+function config() {
+  const v = id => $(id).value.trim();
+  return { theme: v("f-theme"), conditions: v("f-cond").split("\n").map(s => s.trim()).filter(Boolean),
+    teamA: { strength: v("f-a-skill"), members: ["A・" + v("f-a1"), "A・" + v("f-a2")] },
+    teamB: { strength: v("f-b-skill"), members: ["B・" + v("f-b1"), "B・" + v("f-b2")] },
+    staff: ["主催", "リサーチャー", "審査"], criteria: ["発想", "価値", "スケール"] };
+}
+function instruction(c) {
+  return `次の設定で、Botたちのハッカソンを開始して。進め方は /hackathon/rules.md のとおり。
+
+お題: ${c.theme}
+条件: ${c.conditions.join("／")}
+チームA（得意: ${c.teamA.strength}）: ${c.teamA.members[0]}（リーダー）、${c.teamA.members[1]}
+チームB（得意: ${c.teamB.strength}）: ${c.teamB.members[0]}（リーダー）、${c.teamB.members[1]}
+支えるBot: ${c.staff.join("、")}
+審査基準: ${c.criteria.join("・")}（各5点）
+
+メンバーの専門が今のBotと違う場合は、新しく作らず、既存のBotの説明を直してから始めて。
+記録の名前（--from と --to）は、上の表記をそのまま使う。`;
+}
+async function controlTopic(key) {
+  const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key));
+  return "bothack-ctl-" + [...new Uint8Array(h)].slice(0, 8).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+$("go").onclick = async () => {
+  const key = $("f-key").value.trim(), c = config(), st = $("go-status");
+  $("go-text").textContent = instruction(c); $("go-fallback").hidden = false;
+  if (!key) { st.textContent = "開始キーが空です。下の文をGrokBotに貼って始めてください。"; return; }
+  $("go").disabled = true; st.textContent = "合図を送っています…";
+  try {
+    const r = await fetch("https://ntfy.sh/" + await controlTopic(key), { method: "POST",
+      body: JSON.stringify({ type: "go", ts: Math.floor(Date.now() / 1000), config: c, text: instruction(c) }) });
+    if (!r.ok) throw new Error(r.status);
+    st.textContent = "合図を送りました（" + new Date().toLocaleTimeString("ja-JP", { hour12: false }) + "）。GrokBotが受け取ると、ライブに発言が流れます。";
+  } catch (e) { st.textContent = "合図を送れませんでした。下の文をGrokBotに貼って始めてください。"; }
+  $("go").disabled = false;
+};
+$("go-copy").onclick = async () => { try { await navigator.clipboard.writeText($("go-text").textContent); $("go-copy").textContent = "コピーしました"; } catch (e) { $("go-copy").textContent = "選択してコピーしてください"; } };
+$("go-watch").onclick = () => show("live");
+
+/* ---- 起動 ---- */
+preview(); show("live");
 topic = new URLSearchParams(location.search).get("t") || DEFAULT_TOPIC;
 // 保存済みの記録（log.jsonl）があれば先に読む。中継は12時間で消えるため、後から見る人はこちらを見る
-fetch("log.jsonl", { cache: "no-store" }).then(r => r.ok ? r.text() : "").then(t => { parseLines(t, false); })
-  .catch(() => {}).finally(() => { if (topic) poll(true); else { $("setup").hidden = false; render(); } });
+fetch("log.jsonl", { cache: "no-store" }).then(r => r.ok ? r.text() : "").then(t => { if (!t.trim().startsWith("<")) parseLines(t, false); })
+  .catch(() => {}).finally(async () => {
+    sync(); await poll(true);
+    const q = new URLSearchParams(location.search);            // ?replay=1 で自動再生、?view=setup で設定画面から
+    if (q.get("view") === "setup") show("setup"); else if (q.get("replay")) replay();
+  });
 </script>
 </body>
 </html>
