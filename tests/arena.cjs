@@ -1,0 +1,62 @@
+const {JSDOM,VirtualConsole}=require('jsdom');
+const fs=require('node:fs');const path=require('node:path');const assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..');
+async function boot(query){
+ const errors=[];const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8').replace('<script src="arena.js"></script>','<script>'+fs.readFileSync(path.join(root,'arena.js'),'utf8').replace(/\$/g,'$$$$')+'</script>');
+ const dom=new JSDOM(html,{url:'https://arena.test/'+query,runScripts:'dangerously',virtualConsole:vc,beforeParse(w){
+  w.matchMedia=()=>({matches:false});w.scrollTo=()=>{};w.EventSource=class{close(){}};w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false};
+  w.fetch=async url=>{const filename=path.join(root,String(url));const exists=fs.existsSync(filename);return{ok:exists,json:async()=>JSON.parse(fs.readFileSync(filename,'utf8')),text:async()=>exists?fs.readFileSync(filename,'utf8'):''};};
+ }});
+ await new Promise(r=>setTimeout(r,35));return {w:dom.window,errors,close:()=>dom.window.close()};
+}
+(async()=>{
+ const d=await boot('?demo=1');const w=d.w;
+ assert.equal(w.document.querySelectorAll('.station').length,4);
+ assert.equal(w.document.querySelectorAll('.bot').length,8);
+ assert.equal(w.document.querySelector('#result-banner').textContent,'','no winner spoiler on autoplay');
+ assert.equal(w.document.querySelector('#scene-toast').hidden,true,'no finale toast before replay');
+ w.eval('clearTimeout(replayTimer); arenaPaused=true; replayLimit=12; sync(true)');
+ assert.equal(w.document.querySelector('.effect:not(:empty)').textContent,'💡');
+ assert.match(w.document.querySelector('.station-bubble').textContent,/ORACLE/);
+ w.eval('replayLimit=16;sync(true)');
+ assert.deepEqual([...w.document.querySelectorAll('.judge-vote')].map(n=>n.textContent),['ULTRAVIOLET','VIRIDIAN','ULTRAVIOLET']);
+ w.eval('replayLimit=18;sync(true)');
+ assert.deepEqual([...w.document.querySelectorAll('.judge-vote')].map(n=>n.textContent),['投票待ち','投票待ち','投票待ち'],'reset qualifier ballots for final');
+ w.eval('replayLimit=25;sync(true)');assert.match(w.document.querySelector('#result-banner').textContent,/ULTRAVIOLET/);
+ w.eval('replayLimit=0;sync(true)');assert.equal(w.document.querySelector('#result-banner').textContent,'');
+ assert.equal(w.document.querySelector('.station-bubble'),null);
+ w.eval('toggleReplay()');assert.equal(w.eval('replayLimit'),1,'resume after scrub');w.eval('clearTimeout(replayTimer)');
+ for(const url of ['javascript:alert(1)','http://example.com','https://127.0.0.1/a','https://localhost/a','https://192.168.0.1/a','https://user:secret@example.com/a'])assert.equal(w.safeProjectUrl(url),null,url);
+ assert.equal(w.safeProjectUrl('/projects/test/index.html'),'https://arena.test/projects/test/index.html');
+ assert.equal(w.safeProjectUrl('https://example.vercel.app/'),'https://example.vercel.app/');
+ w.eval(`add({id:'xss',from:'SPARK',to:'全員',round:4,kind:'相談',body:'<img src=x onerror=alert(1)>'},true); replayLimit=null;sync(true)`);
+ assert.equal(w.document.querySelector('.station-bubble img'),null,'event payload stays text');
+ w.document.querySelector('[data-name="SPARK"]').click();assert.equal(w.document.querySelector('dialog').open,true);
+ assert.match(w.document.querySelector('#dialog-body').textContent,/ねえ聞いて/);
+ assert.deepEqual(d.errors,[]);d.close();
+ const saved=await boot('?log=logs/run1-from-relay.jsonl');const sw=saved.w;
+ assert.equal(sw.document.querySelectorAll('.station').length,2);
+ assert.match(sw.document.querySelector('#result-banner').textContent,/チームB/);
+ const tally=sw.eval('tally(currentList()).S[3]');
+ assert.equal(Object.values(tally.A).filter(x=>x&&typeof x==='object').reduce((a,c)=>a+c.p,0),10);
+ assert.equal(Object.values(tally.B).filter(x=>x&&typeof x==='object').reduce((a,c)=>a+c.p,0),11);
+ assert.ok(sw.document.querySelector('.artifact-image'));
+ sw.document.querySelector('.artifact-tabs button:last-child').click();assert.match(sw.document.querySelector('.artifact-title').textContent,/リレー/);
+ sw.document.querySelector('.image-button').click();assert.ok(sw.document.querySelector('.project-full'));
+ assert.deepEqual(saved.errors,[]);saved.close();
+ const live=await boot('');const lw=live.w;
+ lw.fetch=async()=>({ok:true,text:async()=>''});
+ await lw.proxyPoll();
+ assert.equal(lw.eval('liveOk'),true,'healthy proxy sets live status');
+ lw.eval('es.onerror()');
+ assert.equal(lw.eval('sseOk'),false,'failed stream enables proxy fallback');
+ assert.equal(lw.eval('liveOk'),true,'stream failure must not override a healthy proxy');
+ assert.equal(lw.document.querySelector('#live').textContent,'ライブ');
+ lw.fetch=async()=>({ok:false,status:503});
+ await lw.proxyPoll();
+ assert.equal(lw.eval('liveOk'),false,'failed proxy still reports a real outage');
+ assert.deepEqual(live.errors,[]);live.close();
+
+ console.log('PASS: 4-team demo, no spoilers, idea effects, phase-specific votes, winner, scrub/resume, safe URLs, XSS, character modal, 43-event legacy replay, 10–11 scores, screenshot showcase.');
+})().catch(e=>{console.error(e);process.exit(1)});

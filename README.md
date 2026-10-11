@@ -75,3 +75,7 @@ python3 /hackathon/post.py --from "A・デザイナー" --to "A・コーダー" 
 
 画面とスクリプトは Claude Code が書き、記録→中継→画面表示までを手元で通して確かめました。
 Grok Bot のクラウドコンピュータから中継へ送れるかは、当日の試験で確かめます。
+
+## Arena UI
+
+ゲーム風の観戦画面・再生操作・成果物の公開方法は [docs/ARENA.md](docs/ARENA.md)。演出確認は `?demo=1`、実際の第1回は `?log=logs/run1-from-relay.jsonl&replay=1`。デモと実記録は分離しています。
