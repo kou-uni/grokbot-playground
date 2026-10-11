@@ -437,7 +437,7 @@ function draw() {
 }
 function connect() {
   es = new EventSource(`https://ntfy.sh/${encodeURIComponent(topic)}/sse?since=${lastNtfyId || "all"}`);
-  es.onopen = () => { liveOk = true; $("live").textContent = "ライブ"; $("live").classList.add("on"); };
+  es.onopen = () => { sseOk = true; liveOk = true; $("live").textContent = "ライブ"; $("live").classList.add("on"); };
   es.onmessage = e => {
     try {
       const o = JSON.parse(e.data); if (o.event !== "message") return;
@@ -448,9 +448,28 @@ function connect() {
     } catch (err) { /* 形式が違うものは読み飛ばす */ }
   };
   es.onerror = () => {
-    liveOk = false; $("live").textContent = "中継につなぎ直しています"; $("live").classList.remove("on");
-    es.close(); setTimeout(connect, 10000);
+    sseOk = false; es.close(); setTimeout(connect, 15000);
   };
+}
+/* 予備：直接つなげない間は、自分のサーバー経由で5秒おきに読む */
+let sseOk = false;
+async function proxyPoll() {
+  if (!sseOk) {
+    try {
+      const r = await fetch(`/api/feed?t=${encodeURIComponent(topic)}&since=${lastNtfyId || "all"}`);
+      if (!r.ok) throw new Error(r.status);
+      for (const line of (await r.text()).split("\n")) {
+        if (!line.trim()) continue;
+        try {
+          const o = JSON.parse(line); if (o.event !== "message") continue;
+          lastNtfyId = o.id; const isNew = Date.now() / 1000 - o.time < 30;
+          add(JSON.parse(o.message), isNew); sawNew ||= isNew; drawTimer ||= setTimeout(draw, 80);
+        } catch (err) { /* 読み飛ばす */ }
+      }
+      liveOk = true; $("live").textContent = "ライブ"; $("live").classList.add("on");
+    } catch (e) { liveOk = false; $("live").textContent = "中継につなぎ直しています"; $("live").classList.remove("on"); }
+  }
+  setTimeout(proxyPoll, 5000);
 }
 
 /* ---- 最初から再生 ---- */
@@ -541,7 +560,7 @@ topic = new URLSearchParams(location.search).get("t") || DEFAULT_TOPIC;
 // 保存済みの記録（log.jsonl）があれば先に読む。中継は12時間で消えるため、後から見る人はこちらを見る
 fetch("log.jsonl", { cache: "no-store" }).then(r => r.ok ? r.text() : "").then(t => { if (!t.trim().startsWith("<")) parseLines(t, false); })
   .catch(() => {}).finally(() => {
-    sync(); connect();
+    sync(); connect(); setTimeout(proxyPoll, 2500);
     const q = new URLSearchParams(location.search);            // ?replay=1 で自動再生、?view=setup で設定画面から
     if (q.get("view") === "setup") show("setup"); else if (q.get("replay")) setTimeout(replay, 2500);
   });
