@@ -18,6 +18,8 @@ Grok Bot の Bot たちが2チームに分かれてハッカソンを行い、�
 
 - [設計書](docs/DESIGN.md)：いま動いているもの（v1）と、次の版（v2）の設計。確かめたことと未確認のことを分けて書いている
 - [提出ドキュメント（仮提出版）](docs/submission-draft.md)：Grok Bot が書いた、1回目の本番の経過・2作品・採点・既知の課題（[Word 版](docs/submission-draft.docx)、[PDF 版](docs/submission-draft.pdf)）
+- [UI・UX の仕様](docs/UIUX.md)：画面の構成、演出、決めてある値、まだ決まっていないこと（担当 wesley）
+- [Grok Bot への指示（第2回）](docs/grokbot-v2-instructions.md)：12体の編成と、4章・10分の進め方
 - [レビュー議事録 2026-10-11](docs/minutes-2026-10-11.md)：決まったこと、実施すべきこと、決めるべき論点
 
 ## 中身
