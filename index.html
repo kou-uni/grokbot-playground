@@ -148,6 +148,7 @@
   .workbtns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 14px; }
   .workbtn { font: inherit; font-size: 18px; font-weight: 900; padding: 10px 26px; border-radius: 40px; cursor: pointer; border: 3px solid var(--ink); background: #FF8A4C; color: var(--ink); box-shadow: 4px 4px 0 var(--ink); }
   .wait-work { font-size: 13px; color: var(--soft); margin-top: 12px; }
+  a.workbtn { text-decoration: none; display: inline-block; }
   .workbtn.sub { background: #fff; font-size: 15px; box-shadow: none; }
   .bubble .workbtns { justify-content: flex-start; margin-top: 8px; } .bubble .workbtn { font-size: 14px; padding: 5px 16px; box-shadow: none; border-width: 2px; }
   .gallery { margin-top: 18px; } .gallery h2 { font-size: 18px; margin: 0 0 8px; }
@@ -488,6 +489,11 @@ function pubFromWorks(all, T) {
   const b = r.runner_up && r.runner_up.html ? safeWork(base + r.runner_up.html) : null; if (b) out["準優勝"] = b;
   return Object.keys(out).length ? out : null;
 }
+const LOCAL_WORK = /http:\/\/127\.0\.0\.1:8766\/teams\/(COBALT|EMBER|VIRIDIAN|ULTRAVIOLET)\/[\w\-.]+\.html/g;
+function localWorks(note) {
+  const line = String(note || "").split("\n").find(l => /^成果物\s*[:：]/.test(l.trim())); if (!line) return [];
+  return [...line.matchAll(LOCAL_WORK)].map(m => ({ url: m[0], team: m[1] }));
+}
 function openWork(path, title) {
   $("work-title").textContent = title; $("work-link").href = path; $("work-frame").src = path; $("work-dlg").showModal();
 }
@@ -530,7 +536,14 @@ function renderStage(all, v2, T) {
     const idea = T.champWork || ideaByTeam(all)[T.champ]; if (idea) f.append(el("div", "work", "「" + idea + "」"));
     if (T.note) f.append(el("div", "sub", T.note.split("\n").filter(l => /^(票|作品|ひとこと)/.test(l.trim())).join("\n")));
     if (pub) f.append(workButtons(pub, T, { [T.champ]: idea, ...(T.runner ? { [T.runner]: T.runnerWork || ideaByTeam(all)[T.runner] } : {}) }));
-    else if (v2) f.append(el("div", "wait-work", "作品は、まだ公開されていません。公開されると、ここに「優勝作品を触る」ボタンが出ます。"));
+    else if (v2) {
+      const loc = localWorks(T.note);
+      if (loc.length) {
+        const box = el("div", "workbtns");
+        loc.forEach((w, i) => { const a = el("a", "workbtn" + (i ? " sub" : ""), (w.team === T.champ ? "優勝作品を開く" : "準優勝作品を開く")); a.href = w.url; a.target = "_blank"; a.rel = "noopener"; box.append(a); });
+        f.append(box, el("div", "wait-work", "このリンクは、GrokBotのコンピューターの画面の中でだけ開けます。外から開けるようになると、ここが「優勝作品を触る」に変わります。"));
+      } else f.append(el("div", "wait-work", "作品は、まだ公開されていません。公開されると、ここに「優勝作品を触る」ボタンが出ます。"));
+    }
     stage.append(f); return;
   }
   if (judging) {
