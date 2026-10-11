@@ -12,6 +12,7 @@ import hashlib
 import json
 import sys
 import time
+import unicodedata
 import urllib.request
 
 
@@ -21,7 +22,8 @@ def main():
     p.add_argument("--minutes", type=float, default=10)
     a = p.parse_args()
 
-    topic = "bothack-ctl-" + hashlib.sha256(a.key.encode("utf-8")).hexdigest()[:16]
+    key = unicodedata.normalize("NFKC", a.key).strip().lower()  # 画面側と同じ正規化
+    topic = "bothack-ctl-" + hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
     start = int(time.time())
     deadline = time.time() + a.minutes * 60
     print(f"合図を待っています（最長 {a.minutes:g} 分）", flush=True)

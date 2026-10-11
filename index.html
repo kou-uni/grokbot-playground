@@ -207,7 +207,8 @@
       <h2>開始</h2>
       <p class="h">開始キーは、GrokBotと決めた合言葉です。知っている人だけが開始できます。この画面には保存されません。</p>
       <label for="f-key">開始キー</label>
-      <input type="password" id="f-key" autocomplete="off">
+      <input type="password" id="f-key" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <label style="font-weight:400"><input type="checkbox" id="f-show"> 開始キーを表示する（全角や大文字になっていないか確かめる）</label>
       <button class="go" id="go">Go</button>
       <div class="status" id="go-status"></div>
       <div id="go-fallback" hidden>
@@ -496,6 +497,7 @@ function instruction(c) {
 記録の名前（--from と --to）は、上の表記をそのまま使う。`;
 }
 async function controlTopic(key) {
+  key = key.normalize("NFKC").trim().toLowerCase();   // 全角・大文字・前後の空白の違いで外れないようにする
   const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key));
   return "bothack-ctl-" + [...new Uint8Array(h)].slice(0, 8).map(b => b.toString(16).padStart(2, "0")).join("");
 }
@@ -508,12 +510,13 @@ $("go").onclick = async () => {
     const r = await fetch("https://ntfy.sh/" + await controlTopic(key), { method: "POST",
       body: JSON.stringify({ type: "go", ts: Math.floor(Date.now() / 1000), config: c, text: instruction(c) }) });
     if (!r.ok) throw new Error(r.status);
-    st.textContent = "合図を送りました（" + new Date().toLocaleTimeString("ja-JP", { hour12: false }) + "）。GrokBotが受け取ると、ライブに発言が流れます。";
+    st.textContent = "合図を送りました（" + new Date().toLocaleTimeString("ja-JP", { hour12: false }) + "）。GrokBotが合図を待っている間だけ届きます。待っていなければ、下の文を貼ってください。";
   } catch (e) { st.textContent = "合図を送れませんでした。下の文をGrokBotに貼って始めてください。"; }
   $("go").disabled = false;
 };
 $("go-copy").onclick = async () => { try { await navigator.clipboard.writeText($("go-text").textContent); $("go-copy").textContent = "コピーしました"; } catch (e) { $("go-copy").textContent = "選択してコピーしてください"; } };
 $("go-watch").onclick = () => show("live");
+$("f-show").onchange = e => { $("f-key").type = e.target.checked ? "text" : "password"; };
 
 /* ---- 起動 ---- */
 preview(); show("live");
