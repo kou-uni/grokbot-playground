@@ -636,6 +636,7 @@ async function readControl(ct, sinceSec) {
   return out;
 }
 // GrokBotが待ち受け中か。待ち受けの知らせ（until）が、まだ先の時刻で、そのあとに受け取りが無ければ「待ち受け中」
+let sending = false;
 async function checkListening() {
   const box = $("listen");
   if (view !== "start") return;
@@ -644,14 +645,15 @@ async function checkListening() {
   const on = beat && beat.until > now && !(ack && ack.time >= beat.time);
   if (!on && ack && now - ack.time < 240) { box.className = "listen on"; $("listen-t").textContent = "GrokBotが合図を受け取りました。議論が始まっています"; return; }
   box.className = "listen " + (on ? "on" : "off");
+  if (!sending) $("go").disabled = !on;    // 待ち受けていない間は押せない。押しても届かないため
   $("listen-t").textContent = on ? `GrokBotが合図を待っています（あと${Math.max(0, Math.round(beat.until - now))}秒）。いま押せば始まります`
-    : "GrokBotは、いま待ち受けていません。GrokBotに「待ち受けて」と送ってください";
+    : "GrokBotは、いま待ち受けていません。押しても届きません。先に、GrokBotに「待ち受けて」と送ってください";
 }
-setInterval(checkListening, 8000);
+setInterval(checkListening, 5000);
 $("f-theme").oninput = () => { $("go").textContent = $("f-theme").value.trim() ? "このお題で始める" : "お題ガチャを回す"; };
 $("go").onclick = async () => {
   const theme = $("f-theme").value.trim().slice(0, 120), st = $("go-status"), reel = $("reel"), span = reel.firstChild;
-  $("go").disabled = true; st.textContent = ""; reel.classList.add("spin");
+  sending = true; $("go").disabled = true; st.textContent = ""; reel.classList.add("spin");
   let i = 0; const spin = setInterval(() => { span.textContent = REEL[i++ % REEL.length]; }, 420); span.textContent = REEL[0];
   let msg, ok = false;
   try {
@@ -667,7 +669,7 @@ $("go").onclick = async () => {
     msg = ok ? "GrokBotが合図を受け取りました。まもなく、ステージで第1章が始まります。"
              : "合図は送りましたが、GrokBotの受け取りを確かめられませんでした。GrokBotに「待ち受けて」と送ってから、もう一度押してください。";
   } catch (e) { msg = "合図を送れませんでした（" + e.message + "）。GrokBotに「開始」と送ってください。"; }
-  clearInterval(spin); reel.classList.remove("spin"); span.textContent = ""; st.textContent = msg; $("go").disabled = false; checkListening();
+  clearInterval(spin); reel.classList.remove("spin"); span.textContent = ""; st.textContent = msg; sending = false; checkListening();
   if (ok) setTimeout(() => { if (logFile) location.href = "./"; else { runSel = null; show("stage"); } }, 2200);   // 保存した回を見ていたら、ライブへ移る
 };
 
