@@ -349,10 +349,10 @@ function currentList(ignoreLimit) {
 
 /* ---- 形式の判定と、採点の集計 ---- */
 // 第2回からは6章・審査3体。第1回の記録（3ラウンド・審査1体）もそのまま読めるようにしている
-const isV2 = all => !all.length || all.some(m => m.kind === "お題" || m.kind === "発表" || m.round > 3 || /お題決め|審査・/.test(m.from) || V2TEAMS.includes(teamOf(m.from)));
-const CH2 = { 1: "お題", 2: "企画", 3: "予選", 4: "決勝" }, CH1 = { 1: "企画", 2: "提案と議論", 3: "制作と決勝" };
+const isV2 = all => !all.length || all.some(m => m.kind === "お題" || m.kind === "発表" || m.round > 3 || /ELONOVA/i.test(m.from) || /お題決め|審査・/.test(m.from) || V2TEAMS.includes(teamOf(m.from)));
+const CH2 = { 1: "お題", 2: "企画", 3: "決着" }, CH1 = { 1: "企画", 2: "提案と議論", 3: "制作と決勝" };
 const CRITS = ["発想", "価値", "スケール"];
-const LIMITS = { 2: [120, "企画の残り"], 3: [90, "予選の残り"], 4: [300, "決勝の残り"] };
+const LIMITS = { 2: [90, "企画の残り"], 3: [210, "決着の残り"] };
 let timerInfo = null;
 function tick() {
   const box = $("timer"); if (!timerInfo || replayLimit != null || !liveOk) { box.hidden = true; return; }
@@ -503,7 +503,7 @@ function renderBoard(all, v2, T) {
     for (const r of Object.keys(T.S).sort()) {
       const d = T.S[r][t]; if (!d) continue;
       const sc = el("div", "sc"), total = CRITS.reduce((a, c) => a + (d[c] ? d[c].p : 0), 0), hd = el("div", "hd");
-      hd.append(el("span", null, v2 ? (r >= 4 ? "決勝" : "予選") : (r >= 3 ? "決勝" : "企画（暫定）")), el("span", null, total + "点"));
+      hd.append(el("span", null, v2 ? (r >= 4 ? "決勝" : "審査") : (r >= 3 ? "決勝" : "企画（暫定）")), el("span", null, total + "点"));
       if (d.votes) { const v = el("span", "votes", "★".repeat(d.votes)); v.title = d.votes + "票"; hd.append(v); } sc.append(hd);
       for (const c of CRITS) { if (!d[c]) continue; const ln = el("div", "ln"), p = el("div", "pips"); ln.title = d[c].why;
         for (let i = 0; i < 5; i++) p.append(el("i", i < d[c].p ? "on" : "")); ln.append(el("span", null, c), p, el("span", null, String(d[c].p))); sc.append(ln); }
