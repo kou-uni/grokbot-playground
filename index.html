@@ -90,6 +90,7 @@
   .kind.k-提案, .kind.k-お題, .kind.k-発表 { background: #FF8A4C; border-color: #FF8A4C; }
   .idle { grid-column: 1 / -1; text-align: center; align-self: center; color: var(--soft); padding: 30px 0; }
   .idle svg { width: 120px; height: 120px; }
+  .idle .pend { font-size: 22px; font-weight: 900; color: var(--ink); margin-top: 6px; }
   .thinking { grid-column: 1 / -1; text-align: center; align-self: center; }
   .thinking .trio { display: flex; justify-content: center; gap: 26px; }
   .thinking svg { width: 120px; height: 120px; animation: ponder 2.4s ease-in-out infinite; }
@@ -144,6 +145,20 @@
   svg.pic { border-radius: 24%; background: #fff; }
   .eye { animation: blink 4s infinite; transform-origin: center; transform-box: fill-box; }
   @keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+  .workbtns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 14px; }
+  .workbtn { font: inherit; font-size: 18px; font-weight: 900; padding: 10px 26px; border-radius: 40px; cursor: pointer; border: 3px solid var(--ink); background: #FF8A4C; color: var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+  .workbtn.sub { background: #fff; font-size: 15px; box-shadow: none; }
+  .bubble .workbtns { justify-content: flex-start; margin-top: 8px; } .bubble .workbtn { font-size: 14px; padding: 5px 16px; box-shadow: none; border-width: 2px; }
+  .gallery { margin-top: 18px; } .gallery h2 { font-size: 18px; margin: 0 0 8px; }
+  .gallery .items { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+  .gitem { background: var(--card); border: 2px solid var(--line); border-radius: 14px; padding: 10px 12px; cursor: pointer; text-align: left; font: inherit; color: inherit; }
+  .gitem b { display: block; font-size: 15px; } .gitem small { color: var(--soft); }
+  dialog.work { width: min(1100px, 96vw); height: min(820px, 92vh); padding: 0; border: 3px solid var(--ink); border-radius: 18px; overflow: hidden; }
+  dialog.work::backdrop { background: #14181Fcc; }
+  dialog.work .bar { display: flex; gap: 12px; align-items: center; padding: 8px 14px; background: var(--ink); color: var(--paper); font-weight: 800; }
+  dialog.work .bar a { color: #FF8A4C; font-size: 13px; margin-left: auto; } dialog.work .bar button { font: inherit; padding: 2px 12px; border-radius: 20px; border: 1px solid #3A4252; background: transparent; color: var(--paper); cursor: pointer; }
+  dialog.work iframe { width: 100%; height: calc(100% - 44px); border: 0; background: #fff; }
+  .kind.k-公開 { background: #16A34A; border-color: #16A34A; color: #fff; }
   .empty { color: var(--soft); padding: 40px 0; text-align: center; }
 
   /* はじめる */
@@ -196,6 +211,7 @@
     <div class="theme" id="theme" hidden><div class="lab">お題</div><div class="t" id="theme-t"></div><div class="c" id="theme-c"></div></div>
     <div class="stage" id="stage"></div>
     <div class="board" id="board"></div>
+    <div class="gallery" id="gallery" hidden><h2>これまでの優勝作品</h2><div class="items" id="gallery-items"></div></div>
   </section>
 
   <section id="view-log" hidden>
@@ -230,6 +246,7 @@
     <dt>根拠</dt><dd>第1回の本番：Bot 7体が43件のやり取りを13分33秒で完走。審査Botが2作品を実際に操作して採点し、チームB「GrokBotリレー名刺」が11点対10点で逆転優勝した。記録は <a href="logs/run1-from-relay.jsonl">logs/run1-from-relay.jsonl</a>、経過と採点の原文は <a href="docs/submission-draft.md">docs/submission-draft.md</a>、再生は <a href="?log=logs/run1-from-relay.jsonl&amp;replay=1">こちら</a>。自走の試験記録は <a href="logs/stage3-selfrun-test.jsonl">logs/stage3-selfrun-test.jsonl</a>（Bot 2体、6通、49秒）。</dd>
   </dl>
 </details>
+<dialog class="work" id="work-dlg"><div class="bar"><span id="work-title"></span><a id="work-link" target="_blank" rel="noopener">別のタブで開く ↗</a><button id="work-close">閉じる</button></div><iframe id="work-frame" title="作品" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe></dialog>
 <footer>非公式・ハッカソン作品。表示しているのは、各Botが自分で記録した発言です。
   <br>過去の回：<a href="?log=logs/run1-from-relay.jsonl&amp;replay=1">第1回を最初から再生</a> ／ <a href="./">いまのライブ</a></footer>
 
@@ -447,6 +464,27 @@ function finalistsOf(all) {
   return new Set(all.filter(m => m.round >= 4 && TEAMS[teamOf(m.from)]).map(m => teamOf(m.from)));
 }
 
+/* ---- 公開された作品 ---- */
+const SITE = "https://grokbot-playground.vercel.app";
+function safeWork(u) {
+  try { const x = new URL(u, location.origin); return (x.origin === SITE || x.origin === location.origin) && x.pathname.startsWith("/works/") && !x.pathname.includes("..") ? x.pathname + x.search : null; } catch (e) { return null; }
+}
+function publishOf(all) {
+  const m = [...all].reverse().find(x => x.kind === "公開" && complete(x)); if (!m) return null;
+  const out = {};
+  for (const raw of bodyOf(m).split("\n")) { const k = raw.trim().match(/^(優勝|準優勝|結果)\s*[:：]\s*(\S+)/); if (k) { const u = safeWork(k[2]); if (u) out[k[1]] = u; } }
+  return Object.keys(out).length ? out : null;
+}
+function openWork(path, title) {
+  $("work-title").textContent = title; $("work-link").href = path; $("work-frame").src = path; $("work-dlg").showModal();
+}
+function workButtons(pub, T, ideas) {
+  const box = el("div", "workbtns");
+  if (pub["優勝"]) { const b = el("button", "workbtn", "優勝作品を触る"); b.onclick = () => openWork(pub["優勝"], "優勝　" + (ideas[T.champ] || T.champWork || "")); box.append(b); }
+  if (pub["準優勝"]) { const b = el("button", "workbtn sub", "準優勝作品を触る"); b.onclick = () => openWork(pub["準優勝"], "準優勝　" + (ideas[T.runner] || "")); box.append(b); }
+  return box;
+}
+
 /* ---- ステージ ---- */
 let stageKey = "", typer = null; const seenIdea = new Set(); let seenTheme = "";
 const PONDER = ["うーん…", "これは新しいかな？", "誰が嬉しいんだろう…", "ちゃんと広がるかな？", "もう一回見てみよう"];
@@ -455,12 +493,20 @@ function slot(name, cls, v2) {
   const s = el("div", "slot " + cls); s.innerHTML = avatar(name); s.append(el("div", "nm", name));
   s.append(el("div", "mb", v2 ? noteOf(name) : "")); return s;
 }
+let pendingStart = Number(Q.get("started")) || 0;    // 画面から合図を送った時刻。新しい回の最初の発言が出るまで使う
 function renderStage(all, v2, T) {
   const stage = $("stage"), last = all[all.length - 1];
+  if (pendingStart && (Date.now() / 1000 - pendingStart > 240 || (last && last.ts >= pendingStart - 5))) pendingStart = 0;
+  if (pendingStart) {
+    if (stageKey === "pending") return; stageKey = "pending"; clearInterval(typer); stage.textContent = "";
+    const d = el("div", "idle"); d.innerHTML = avatar("ELONOVA"); const dots = el("div", "dots"); dots.append(el("i"), el("i"), el("i"));
+    d.append(el("div", "pend", "合図が届きました。ELONOVAがお題を準備しています"), dots); stage.append(d); return;
+  }
   const fresh = last && (replayLimit != null ? all.length < currentList(true).length : liveOk && Date.now() / 1000 - last.ts < 240);
-  const final = last && T.champ && (last.kind === "発表" || (!v2 && last.kind === "採点" && last.round >= 3) || (last.kind === "進行" && /優勝|結果発表/.test(bodyOf(last))));
+  const announced = all.some(m => m.kind === "発表" && complete(m)), pub = publishOf(all);
+  const final = last && T.champ && (announced || (!v2 && last.kind === "採点" && last.round >= 3) || (last.kind === "進行" && /優勝|結果発表/.test(bodyOf(last))));
   const judging = last && fresh && !final && last.kind !== "採点" && last.to.includes("審査");
-  const key = !last ? "idle" : final ? "final" + last.id : judging ? "judge" + last.id : last.id + complete(last);
+  const key = !last ? "idle" : final ? "final" + last.id + (pub ? "p" : "") : judging ? "judge" + last.id : last.id + complete(last);
   if (key === stageKey) return; stageKey = key; clearInterval(typer); stage.textContent = "";
 
   if (!last) { const d = el("div", "idle"); d.innerHTML = avatar("主催者"); d.append(el("div", null, "開始を待っています。「はじめる」からお題ガチャを回せます。")); stage.append(d); return; }
@@ -470,6 +516,7 @@ function renderStage(all, v2, T) {
     f.append(el("div", "cup", "WINNER"), who);
     const idea = T.champWork || ideaByTeam(all)[T.champ]; if (idea) f.append(el("div", "work", "「" + idea + "」"));
     if (T.note) f.append(el("div", "sub", T.note.split("\n").filter(l => /^(票|作品|ひとこと)/.test(l.trim())).join("\n")));
+    if (pub) f.append(workButtons(pub, T, { [T.champ]: idea, ...(T.runner ? { [T.runner]: ideaByTeam(all)[T.runner] } : {}) }));
     stage.append(f); return;
   }
   if (judging) {
@@ -554,7 +601,9 @@ function rowNode(m) {
   const row = el("div", `row ${sideOf(m.from)}${fresh ? " new" : ""}`), bubble = el("div", "bubble"), meta = el("div", "meta");
   const tm = TEAMS[teamOf(m.from)]; if (tm) { bubble.style.background = tm.bg; bubble.style.borderColor = tm.c2; }
   meta.append(el("span", "kind k-" + m.kind, m.kind), el("span", null, "→ " + m.to), el("span", null, m.ts ? new Date(m.ts * 1000).toLocaleTimeString("ja-JP", { hour12: false }) : ""));
-  bubble.append(meta, el("div", "body")); row.append(avatarEl(m.from), bubble); m.node = row; fillBody(m); return row;
+  bubble.append(meta, el("div", "body")); row.append(avatarEl(m.from), bubble); m.node = row; fillBody(m);
+  if (m.kind === "公開" && complete(m)) { const pub = publishOf([m]); if (pub) { const T2 = tally(currentList(true)); bubble.append(workButtons(pub, T2, ideaByTeam(currentList(true)))); } }
+  return row;
 }
 function sync(force) {
   const all = currentList(), ids = all.map(m => m.id), v2 = isV2(currentList(true)), T = tally(all), list = $("list");
@@ -654,7 +703,7 @@ $("f-theme").oninput = () => { $("go").textContent = $("f-theme").value.trim() ?
 $("go").onclick = async () => {
   const theme = $("f-theme").value.trim().slice(0, 120), st = $("go-status"), reel = $("reel"), span = reel.firstChild;
   sending = true; $("go").disabled = true; st.textContent = ""; reel.classList.add("spin");
-  let i = 0; const spin = setInterval(() => { span.textContent = REEL[i++ % REEL.length]; }, 420); span.textContent = REEL[0];
+  let i = 0; const spin = setInterval(() => { span.textContent = REEL[i++ % REEL.length]; }, 300); span.textContent = REEL[0];
   let msg, ok = false;
   try {
     const ct = CONTROL, payload = { type: "go", ts: Math.floor(Date.now() / 1000), theme, text: "開始" };
@@ -663,15 +712,34 @@ $("go").onclick = async () => {
     let r = await send("/api/go", JSON.stringify({ topic: ct, payload })).catch(() => null);
     if (!r || !r.ok) r = await send("https://ntfy.sh/" + ct, JSON.stringify(payload));
     if (!r.ok) throw new Error("HTTP " + r.status);
-    // GrokBotが受け取ったかを、12秒まで確かめる
+    // GrokBotが受け取ったかを、1秒おきに10秒まで確かめる。分かったら、すぐステージへ移る
     const sent = Math.floor(Date.now() / 1000);
-    for (let n = 0; n < 4 && !ok; n++) { await new Promise(r => setTimeout(r, 3000)); ok = (await readControl(ct, 60)).some(e => e.type === "ack" && e.time >= sent - 2); }
+    for (let n = 0; n < 10 && !ok; n++) { await new Promise(r => setTimeout(r, 1000)); ok = (await readControl(ct, 60)).some(e => e.type === "ack" && e.time >= sent - 2); }
     msg = ok ? "GrokBotが合図を受け取りました。まもなく、ステージで第1章が始まります。"
              : "合図は送りましたが、GrokBotの受け取りを確かめられませんでした。GrokBotに「待ち受けて」と送ってから、もう一度押してください。";
   } catch (e) { msg = "合図を送れませんでした（" + e.message + "）。GrokBotに「開始」と送ってください。"; }
   clearInterval(spin); reel.classList.remove("spin"); span.textContent = ""; st.textContent = msg; sending = false; checkListening();
-  if (ok) setTimeout(() => { if (logFile) location.href = "./"; else { runSel = null; show("stage"); } }, 2200);   // 保存した回を見ていたら、ライブへ移る
+  if (ok) setTimeout(() => {      // 保存した回を見ていたら、ライブへ移る
+    if (logFile) location.href = "./?started=" + Math.floor(Date.now() / 1000);
+    else { runSel = null; pendingStart = Date.now() / 1000; stageKey = ""; show("stage"); sync(); }
+  }, 400);
 };
+
+/* ---- これまでの優勝作品 ---- */
+$("work-close").onclick = () => $("work-dlg").close();
+$("work-dlg").addEventListener("close", () => { $("work-frame").src = "about:blank"; });
+function loadGallery() {
+  fetch("works/index.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(j => {
+    const runs = j && Array.isArray(j.runs) ? j.runs : []; const box = $("gallery-items"); box.textContent = "";
+    for (const r of runs) {
+      const path = safeWork("/" + String(r.path || "").replace(/^\/+/, "") + "winner/index.html"); if (!path) continue;
+      const b = el("button", "gitem"); b.append(el("b", null, "第" + r.run + "回　" + (r.title || "")), el("small", null, "優勝 " + (r.winner || "")));
+      b.onclick = () => openWork(path, "第" + r.run + "回 優勝　" + (r.title || "")); box.append(b);
+    }
+    $("gallery").hidden = !box.children.length;
+  }).catch(() => {});
+}
+loadGallery(); setInterval(loadGallery, 60000);
 
 /* ---- 起動 ---- */
 show("stage");
