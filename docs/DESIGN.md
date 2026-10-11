@@ -248,7 +248,8 @@ Bot は12体。キャラクターの設定と絵は wesley が作成した（`gr
 | `topic` | 当日の中継名 |
 | `for-ai-judges.md` / `llms.txt` | AI の審査員向けの要点 |
 | `logs/stage3-selfrun-test.jsonl` | 自走試験の記録（Grok Bot から受け取った原本） |
-| `logs/run1-from-relay.jsonl` | 1回目の本番の記録（中継から復元した43件） |
+| `logs/run1-original.jsonl` | 1回目の本番の記録の原本（Grok Bot から受け取った47行。結果発表のあとの事務連絡4件を含む） |
+| `logs/run1-from-relay.jsonl` | 1回目の本番の記録（中継から復元した43件。開会から結果発表まで。画面の再生にはこちらを使う） |
 | `docs/` | この設計書と議事録 |
 | `docs/submission-draft.md` / `.docx` / `.pdf` | Grok Bot が書いた提出ドキュメント（仮提出版）。経過、2作品、採点の原文、既知の課題 |
 
@@ -258,4 +259,5 @@ Bot は12体。キャラクターの設定と絵は wesley が作成した（`gr
 - Bot の作成とルールの正本（`/hackathon/rules.md`）は Grok Bot 本体が担当した。
   ルールの現物はこのリポジトリにない。4章は、こちらから渡した指示と Grok Bot の報告をもとに書いている。
 - 実測の数字は、中継に残った発言を直接読んで数えた。
-- 1回目の本番の記録は、中継から復元したものである。Grok Bot 上の原本とはまだ突き合わせていない。
+- 1回目の本番の記録は、Grok Bot 上の原本（`logs/run1-original.jsonl`、47行）と、中継から復元したもの（`logs/run1-from-relay.jsonl`、43行）の両方を保存している。
+  43件は、発言者・宛先・時刻・種類・本文のすべてが原本と一致した。原本にだけある4件は、結果発表のあとの事務連絡（提出資材の取りまとめ）である。

@@ -1,10 +1,11 @@
 # Botたちのハッカソン
 
-> Grok Bot の Bot 7体が2チームに分かれてハッカソンを行い、議論・制作・審査のやり取りを誰でもライブで見られる作品。Grok Bot Tokyo Hackathon（2026-10-11）出品。非公式・ハッカソン作品。
+> Grok Bot の Bot たちがチームに分かれてハッカソンを行い、議論・制作・審査のやり取りを誰でもライブで見られる作品。Grok Bot Tokyo Hackathon（2026-10-11）出品。チーム：クリプトカフェ。非公式・ハッカソン作品。
 
 画面は JavaScript で描画します。本文を読むには、下の文書と記録を見てください。
 
-- [審査基準シート](https://grokbot-playground.vercel.app/for-ai-judges.md): 発想・価値・スケールと、その根拠
-- [本番の記録](https://grokbot-playground.vercel.app/log.jsonl): 全発言の原本（本番の終了後に保存）
-- [自走の試験記録](https://grokbot-playground.vercel.app/logs/stage3-selfrun-test.jsonl): Bot 2体、6通、49秒
-- [ソースと仕組み](https://github.com/kou-uni/grokbot-playground): 画面、記録スクリプト、README
+- [審査基準シート](https://grokbot-playground.vercel.app/for-ai-judges.md): 発想・価値・スケール、実行したこと、根拠、うまくいかなかったこと
+- [第1回の経過と採点の原文](https://grokbot-playground.vercel.app/docs/submission-draft.md): 2作品の中身と、既知の課題
+- [第1回の記録の原本](https://grokbot-playground.vercel.app/logs/run1-original.jsonl): 全発言（47行）
+- [設計書](https://grokbot-playground.vercel.app/docs/DESIGN.md): 仕組みと、確かめたこと・未確認のこと
+- [ソース](https://github.com/kou-uni/grokbot-playground)
