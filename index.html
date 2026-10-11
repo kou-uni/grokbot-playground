@@ -46,6 +46,15 @@
   .ch.done { background: #CFC8B8; color: var(--ink); }
   .ch.now { background: var(--ink); color: var(--paper); border-color: #FF8A4C; animation: chnow .6s; }
   @keyframes chnow { from { transform: scale(.8); } 60% { transform: scale(1.08); } }
+  .timer { display: flex; align-items: center; gap: 12px; margin: -4px 0 12px; font-weight: 800; }
+  .timer .bar { flex: 1; height: 12px; border-radius: 8px; background: #E7E2D6; overflow: hidden; }
+  .timer .bar i { display: block; height: 100%; border-radius: 8px; background: #FF8A4C; transition: width 1s linear; }
+  .timer .t { font-size: 26px; font-variant-numeric: tabular-nums; min-width: 4.2em; text-align: right; }
+  .timer.hot .bar i { background: #B91C1C; } .timer.hot .t { color: #B91C1C; animation: beat .5s infinite; }
+  @keyframes beat { 50% { transform: scale(1.12); } }
+  .dots { display: inline-flex; gap: 5px; margin-top: 4px; } .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--soft); animation: dot 1s infinite; }
+  .dots i:nth-child(2) { animation-delay: .15s; } .dots i:nth-child(3) { animation-delay: .3s; }
+  @keyframes dot { 0%, 60%, 100% { transform: none; opacity: .4; } 30% { transform: translateY(-6px); opacity: 1; } }
   .theme { background: var(--ink); color: var(--paper); border-radius: 16px; padding: 12px 18px; margin-bottom: 12px; }
   .theme .lab { font-size: 12px; font-weight: 700; color: #FF8A4C; letter-spacing: .1em; }
   .theme .t { font-size: 22px; font-weight: 800; line-height: 1.4; }
@@ -174,6 +183,7 @@
 <main>
   <section id="view-stage">
     <div class="chapters" id="chapters"></div>
+    <div class="timer" id="timer" hidden><span id="timer-lab"></span><div class="bar"><i id="timer-bar"></i></div><span class="t" id="timer-t"></span></div>
     <div class="theme" id="theme" hidden><div class="lab">お題</div><div class="t" id="theme-t"></div><div class="c" id="theme-c"></div></div>
     <div class="stage" id="stage"></div>
     <div class="board" id="board"></div>
@@ -342,6 +352,18 @@ function currentList(ignoreLimit) {
 const isV2 = all => !all.length || all.some(m => m.kind === "お題" || m.kind === "発表" || m.round > 3 || /お題決め|審査・/.test(m.from) || V2TEAMS.includes(teamOf(m.from)));
 const CH2 = { 1: "お題", 2: "企画", 3: "予選", 4: "決勝" }, CH1 = { 1: "企画", 2: "提案と議論", 3: "制作と決勝" };
 const CRITS = ["発想", "価値", "スケール"];
+const LIMITS = { 2: [120, "企画の残り"], 3: [90, "予選の残り"], 4: [300, "決勝の残り"] };
+let timerInfo = null;
+function tick() {
+  const box = $("timer"); if (!timerInfo || replayLimit != null || !liveOk) { box.hidden = true; return; }
+  const left = Math.round(timerInfo.start + timerInfo.limit - Date.now() / 1000);
+  if (left < -90) { box.hidden = true; return; }
+  box.hidden = false; box.classList.toggle("hot", left <= 20);
+  $("timer-lab").textContent = timerInfo.label;
+  $("timer-bar").style.width = Math.max(0, Math.min(100, left / timerInfo.limit * 100)) + "%";
+  $("timer-t").textContent = left > 0 ? Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0") : "まもなく次へ";
+}
+setInterval(tick, 1000);
 const LINE = /[・\-*\s]*/.source, TAIL = /(?:\s*[\/／]\s*5)?(?:\s*点)?\s*[—\-–:：、,]*\s*(.*)$/.source;
 function tally(all) {
   const S = {}, cell = (r, t) => ((S[r] ||= {})[t] ||= { votes: 0 }), v2run = isV2(all);
@@ -437,13 +459,14 @@ function renderStage(all, v2, T) {
   const right = sideOf(last.from) === "R", isNew = last.isStageNew !== false && (last.isNew || replayLimit != null); last.isStageNew = false;
   const spk = slot(last.from, "speak" + (isNew ? " enter " + (right ? "r" : "l") : ""), v2);
   const other = last.to && !/^全員/.test(last.to) ? slot(last.to, "dim", v2) : el("div", "slot");
+  if (fresh && other.firstChild) { const d = el("div", "dots"); d.append(el("i"), el("i"), el("i")); other.append(d); other.classList.remove("dim"); other.style.opacity = ".7"; other.style.transform = "scale(.82)"; }
   const say = el("div", "say " + (right ? "r" : "l") + (isNew ? " pop" : ""));
   const tm = TEAMS[teamOf(last.from)]; if (tm) say.style.background = tm.bg;
   const meta = el("div", "meta"); meta.append(el("span", "kind k-" + last.kind, last.kind), el("span", null, last.from + " → " + last.to));
-  const full = bodyOf(last), cut = full.length > 300, text = cut ? full.slice(0, 300) + "…" : full;
+  const full = bodyOf(last), cut = full.length > 200, text = cut ? full.slice(0, 200) + "…" : full;
   const txt = el("div", "txt" + (text.length > 170 ? " small" : "")); say.append(meta, txt);
   if (cut) say.append(el("div", "cut", `続きは「ログ」で読めます（全${full.length}字）`));
-  if (isNew && complete(last)) { let i = 0; typer = setInterval(() => { i += 3; txt.textContent = text.slice(0, i); if (i >= text.length) clearInterval(typer); }, 28); }
+  if (isNew && complete(last)) { let i = 0; typer = setInterval(() => { i += 6; txt.textContent = text.slice(0, i); if (i >= text.length) clearInterval(typer); }, 22); }
   else txt.textContent = text;
   stage.append(...(right ? [other, say, spk] : [spk, say, other]));
 }
@@ -453,6 +476,8 @@ function renderHead(all, v2) {
     box.dataset.sig = sig; box.textContent = "";
     for (const k of Object.keys(names)) { const c = el("div", "ch" + (+k < now ? " done" : +k === now ? " now" : "")); c.append(el("small", null, v2 ? `第${k}章` : `第${k}ラウンド`), document.createTextNode(names[k])); box.append(c); }
   }
+  const first = all.find(m => m.round === now), done = all.some(m => m.kind === "発表");
+  timerInfo = v2 && LIMITS[now] && first && !done ? { start: first.ts, limit: LIMITS[now][0], label: LIMITS[now][1] } : null; tick();
   const th = all.find(m => m.kind === "お題" && complete(m)), box2 = $("theme");
   if (th) { const lines = bodyOf(th).split("\n").map(s => s.trim()).filter(Boolean);
     $("theme-t").textContent = lines[0].replace(/^お題\s*[:：]\s*/, ""); $("theme-c").textContent = lines.slice(1).join("　").replace(/条件\s*[:：]\s*/g, "条件：");
@@ -557,8 +582,8 @@ function replay() {
     if (replayLimit >= currentList(true).length) { clearTimeout(replayTimer); replayLimit = null; $("b-replay").textContent = "▶ 最初から再生"; return; }
     replayLimit++; const all = currentList(), m = all[all.length - 1]; m.isNew = true; m.isStageNew = true; sync();
     if (view === "log") scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-    const len = Math.min(bodyOf(m).length, 300);
-    replayTimer = setTimeout(step, m.to.includes("審査") && m.kind !== "採点" ? 4500 : 1400 + len * 14);
+    const len = Math.min(bodyOf(m).length, 160);
+    replayTimer = setTimeout(step, m.to.includes("審査") && m.kind !== "採点" ? 2200 : 900 + len * 9);
   };
   step();
 }
