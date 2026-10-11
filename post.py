@@ -2,7 +2,7 @@
 """Botの発言を1件、記録して中継する。
 
 使い方:
-  python3 post.py --from "A・デザイナー" --to "A・コーダー" --round 1 --kind 相談 --body "本文"
+  python3 post.py --from "A・デザイナー" --to "A・コーダー" --round 2 --kind 相談 --body "本文"
   echo "長い本文" | python3 post.py --from 審査 --to 全員 --round 3 --kind 採点
 
 やること:
@@ -19,7 +19,7 @@ import time
 import urllib.request
 import uuid
 
-KINDS = ["進行", "相談", "調査", "提案", "批判", "修正", "採点"]
+KINDS = ["進行", "お題", "相談", "調査", "提案", "批判", "修正", "採点", "発表"]
 CHUNK = 1000  # 1通あたりの文字数。ntfy の上限 4096 バイトに収める
 
 
