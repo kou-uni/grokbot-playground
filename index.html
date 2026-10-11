@@ -344,7 +344,7 @@ const CH2 = { 1: "お題", 2: "企画", 3: "予選", 4: "磨き直し", 5: "決�
 const CRITS = ["発想", "価値", "スケール"];
 const LINE = /[・\-*\s]*/.source, TAIL = /(?:\s*[\/／]\s*5)?(?:\s*点)?\s*[—\-–:：、,]*\s*(.*)$/.source;
 function tally(all) {
-  const S = {}, cell = (r, t) => ((S[r] ||= {})[t] ||= { votes: 0 });
+  const S = {}, cell = (r, t) => ((S[r] ||= {})[t] ||= { votes: 0 }), v2run = isV2(all);
   let champ = null, runner = null, champWork = "", note = "";
   for (const m of all) {
     if (!complete(m)) continue; const text = bodyOf(m);
@@ -362,8 +362,10 @@ function tally(all) {
           const line = raw.trim();
           const s = line.match(new RegExp("^" + LINE + "(発想|価値|スケール)\\s*[:：]\\s*([0-5])" + TAIL));
           if (s && cur) { cell(m.round, cur)[s[1]] = { p: +s[2], why: s[3] }; continue; }
-          const w = line.match(/^勝者\s*[:：]\s*チーム\s*([AB])/); if (w && m.round >= 3) { champ = w[1]; continue; }
-          const t = line.match(/チーム\s*([AB])/); if (t && line.length < 24) cur = t[1];
+          const w = line.match(new RegExp("^(?:勝者|優勝)\\s*[:：]\\s*(?:チーム)?\\s*" + TEAM_RE, "i"));
+          if (w) { if (m.round >= (v2run ? 5 : 3)) champ = normTeam(w[1]); continue; }
+          const v = line.match(new RegExp("^(?:決勝進出|投票)\\s*[:：]", "i")); if (v) continue;
+          const t = line.match(new RegExp("^[【\\[■#\\s]*(?:チーム)?\\s*" + TEAM_RE + "[】\\]\\s:：]*$", "i")); if (t) cur = normTeam(t[1]);
         }
       }
     }
@@ -419,7 +421,7 @@ function renderStage(all, v2, T) {
 
   if (!last) { const d = el("div", "idle"); d.innerHTML = avatar("主催"); d.append(el("div", null, "開始を待っています。「はじめる」からお題ガチャを回せます。")); stage.append(d); return; }
   if (final) {
-    const f = el("div", "finale"), tm = TEAMS[T.champ]; f.innerHTML = avatar("プレゼンター");
+    const f = el("div", "finale"), tm = TEAMS[T.champ]; f.innerHTML = avatar("主催者");
     const who = el("div", "who", "優勝　" + tm.label); who.style.color = tm.c;
     f.append(el("div", "cup", "WINNER"), who);
     const idea = T.champWork || ideaByTeam(all)[T.champ]; if (idea) f.append(el("div", "work", "「" + idea + "」"));
@@ -428,7 +430,8 @@ function renderStage(all, v2, T) {
   }
   if (judging) {
     const t = el("div", "thinking"), trio = el("div", "trio");
-    for (const n of v2 ? ["審査・発想", "審査・価値", "審査・スケール"] : ["審査"]) { const j = el("div", "j"); j.innerHTML = avatar(n); j.append(el("div", "nm", n)); trio.append(j); }
+    const judges = Object.keys(CHARS).filter(k => k.includes("審査"));
+    for (const n of v2 ? (judges.length ? judges : ["審査員代表"]) : ["審査"]) { const j = el("div", "j"); j.innerHTML = avatar(n); j.append(el("div", "nm", n)); trio.append(j); }
     t.append(trio, el("div", "q", ponderNow()), el("div", "s", "審査Botが、発想・価値・スケールで採点しています")); stage.append(t); return;
   }
   const right = sideOf(last.from) === "R", isNew = last.isStageNew !== false && (last.isNew || replayLimit != null); last.isStageNew = false;
