@@ -26,7 +26,7 @@ def main():
     topic = "bothack-ctl-" + hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
     start = int(time.time())
     deadline = time.time() + a.minutes * 60
-    print(f"合図を待っています（最長 {a.minutes:g} 分）", flush=True)
+    print(f"合図を待っています（最長 {a.minutes:g} 分・照合コード {topic[-4:]}）", flush=True)
     while time.time() < deadline:
         try:
             url = f"https://ntfy.sh/{topic}/json?poll=1&since={start}"
