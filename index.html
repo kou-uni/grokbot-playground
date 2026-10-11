@@ -147,6 +147,7 @@
   @keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
   .workbtns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 14px; }
   .workbtn { font: inherit; font-size: 18px; font-weight: 900; padding: 10px 26px; border-radius: 40px; cursor: pointer; border: 3px solid var(--ink); background: #FF8A4C; color: var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+  .wait-work { font-size: 13px; color: var(--soft); margin-top: 12px; }
   .workbtn.sub { background: #fff; font-size: 15px; box-shadow: none; }
   .bubble .workbtns { justify-content: flex-start; margin-top: 8px; } .bubble .workbtn { font-size: 14px; padding: 5px 16px; box-shadow: none; border-width: 2px; }
   .gallery { margin-top: 18px; } .gallery h2 { font-size: 18px; margin: 0 0 8px; }
@@ -475,6 +476,18 @@ function publishOf(all) {
   for (const raw of bodyOf(m).split("\n")) { const k = raw.trim().match(/^(優勝|準優勝|結果)\s*[:：]\s*(\S+)/); if (k) { const u = safeWork(k[2]); if (u) out[k[1]] = u; } }
   return Object.keys(out).length ? out : null;
 }
+let WORKS = [];   // works/index.json の中身（＋各回の result.json）
+const sameTitle = (a, b) => { const n = x => String(x || "").replace(/[\s　―—\-・「」『』]/g, ""); return n(a) && (n(a).includes(n(b)) || n(b).includes(n(a))); };
+function pubFromWorks(all, T) {
+  if (!T.champ || !all.length) return null;
+  const start = all[0].ts, end = all[all.length - 1].ts;
+  const w = WORKS.find(w => w.winner === T.champ && ((w.ended && w.ended >= start - 120 && w.ended <= end + 5400) || sameTitle(w.title, T.champWork)));
+  if (!w) return null;
+  const base = "/" + String(w.path || "").replace(/^\/+/, ""), r = w.result || {}, out = {};
+  const a = safeWork(base + ((r.winner && r.winner.html) || "winner/index.html")); if (a) out["優勝"] = a;
+  const b = r.runner_up && r.runner_up.html ? safeWork(base + r.runner_up.html) : null; if (b) out["準優勝"] = b;
+  return Object.keys(out).length ? out : null;
+}
 function openWork(path, title) {
   $("work-title").textContent = title; $("work-link").href = path; $("work-frame").src = path; $("work-dlg").showModal();
 }
@@ -503,7 +516,7 @@ function renderStage(all, v2, T) {
     d.append(el("div", "pend", "合図が届きました。ELONOVAがお題を準備しています"), dots); stage.append(d); return;
   }
   const fresh = last && (replayLimit != null ? all.length < currentList(true).length : liveOk && Date.now() / 1000 - last.ts < 240);
-  const announced = all.some(m => m.kind === "発表" && complete(m)), pub = publishOf(all);
+  const announced = all.some(m => m.kind === "発表" && complete(m)), pub = publishOf(all) || pubFromWorks(all, T);
   const final = last && T.champ && (announced || (!v2 && last.kind === "採点" && last.round >= 3) || (last.kind === "進行" && /優勝|結果発表/.test(bodyOf(last))));
   const judging = last && fresh && !final && last.kind !== "採点" && last.to.includes("審査");
   const key = !last ? "idle" : final ? "final" + last.id + (pub ? "p" : "") : judging ? "judge" + last.id : last.id + complete(last);
@@ -516,7 +529,8 @@ function renderStage(all, v2, T) {
     f.append(el("div", "cup", "WINNER"), who);
     const idea = T.champWork || ideaByTeam(all)[T.champ]; if (idea) f.append(el("div", "work", "「" + idea + "」"));
     if (T.note) f.append(el("div", "sub", T.note.split("\n").filter(l => /^(票|作品|ひとこと)/.test(l.trim())).join("\n")));
-    if (pub) f.append(workButtons(pub, T, { [T.champ]: idea, ...(T.runner ? { [T.runner]: ideaByTeam(all)[T.runner] } : {}) }));
+    if (pub) f.append(workButtons(pub, T, { [T.champ]: idea, ...(T.runner ? { [T.runner]: T.runnerWork || ideaByTeam(all)[T.runner] } : {}) }));
+    else if (v2) f.append(el("div", "wait-work", "作品は、まだ公開されていません。公開されると、ここに「優勝作品を触る」ボタンが出ます。"));
     stage.append(f); return;
   }
   if (judging) {
@@ -729,18 +743,25 @@ $("go").onclick = async () => {
 /* ---- これまでの優勝作品 ---- */
 $("work-close").onclick = () => $("work-dlg").close();
 $("work-dlg").addEventListener("close", () => { $("work-frame").src = "about:blank"; });
-function loadGallery() {
-  fetch("works/index.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(j => {
-    const runs = j && Array.isArray(j.runs) ? j.runs : []; const box = $("gallery-items"); box.textContent = "";
+async function loadGallery() {
+  try {
+    const j = await fetch("works/index.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null);
+    const runs = j && Array.isArray(j.runs) ? j.runs : [], box = $("gallery-items");
+    for (const r of runs) {                       // 各回の結果（作品のファイル名、準優勝の有無）も読む
+      const base = safeWork("/" + String(r.path || "").replace(/^\/+/, "") + "result.json");
+      r.result = base ? await fetch(base, { cache: "no-store" }).then(x => x.ok ? x.json() : null).catch(() => null) : null;
+    }
+    const before = JSON.stringify(WORKS); WORKS = runs; box.textContent = "";
     for (const r of runs) {
-      const path = safeWork("/" + String(r.path || "").replace(/^\/+/, "") + "winner/index.html"); if (!path) continue;
+      const path = safeWork("/" + String(r.path || "").replace(/^\/+/, "") + ((r.result && r.result.winner && r.result.winner.html) || "winner/index.html")); if (!path) continue;
       const b = el("button", "gitem"); b.append(el("b", null, "第" + r.run + "回　" + (r.title || "")), el("small", null, "優勝 " + (r.winner || "")));
       b.onclick = () => openWork(path, "第" + r.run + "回 優勝　" + (r.title || "")); box.append(b);
     }
     $("gallery").hidden = !box.children.length;
-  }).catch(() => {});
+    if (before !== JSON.stringify(WORKS)) { stageKey = ""; if (replayLimit == null) sync(); }   // 作品が増えたら、発表の画面にもボタンを出す
+  } catch (e) { /* 一覧が無ければ何も出さない */ }
 }
-loadGallery(); setInterval(loadGallery, 60000);
+loadGallery(); setInterval(loadGallery, 30000);
 
 /* ---- 起動 ---- */
 show("stage");
