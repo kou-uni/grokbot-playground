@@ -215,31 +215,59 @@
     "function": "リサーチ",
     "function_reason": "前提を疑い、他チームの戦略も調べる"
   },
+  "ELONOVA": {
+    "team": "",
+    "kana": "イーロノヴァ",
+    "role": "主催者。お題を探して決め、進行し、時間を計り、最後に結果を発表する。企画への意見も採点もしない",
+    "mbti": "ENFJ",
+    "note": "主催者",
+    "catch": "未来は、ここから始まる。",
+    "line": "面白い未来を、一緒につくろう。",
+    "img": "chars/elonova.jpg",
+    "sheet": "grokbot_character_sheets/01_ELONOVA_design_sheet.png",
+    "sheet_md": "grokbot_character_sheets/01_ELONOVA.md"
+  },
+  "主催者": {
+    "team": "",
+    "kana": "イーロノヴァ",
+    "role": "主催者。お題を探して決め、進行し、時間を計り、最後に結果を発表する。企画への意見も採点もしない",
+    "mbti": "ENFJ",
+    "note": "主催者",
+    "catch": "未来は、ここから始まる。",
+    "line": "面白い未来を、一緒につくろう。",
+    "img": "chars/elonova.jpg",
+    "sheet": "grokbot_character_sheets/01_ELONOVA_design_sheet.png",
+    "sheet_md": "grokbot_character_sheets/01_ELONOVA.md",
+    "alias_of": "ELONOVA"
+  },
   "審査・発想": {
     "team": "",
     "role": "審査員。発想（新しいか）だけを見る",
-    "note": "新しさに辛口",
+    "note": "審査員｜発想",
     "tone": "見たことのあるものに厳しい辛口",
-    "img": ""
+    "img": "chars/kinoprime.jpg",
+    "character": "KINØPRIME（キノプライム）審査委員長の絵を3体で共有する",
+    "sheet": "grokbot_character_sheets/02_KINOPRIME_design_sheet.png",
+    "sheet_md": "grokbot_character_sheets/02_KINOPRIME.md"
   },
   "審査・価値": {
     "team": "",
     "role": "審査員。価値（誰が嬉しいか）だけを見る",
-    "note": "使う人の味方",
+    "note": "審査員｜価値",
     "tone": "使う人の立場でしか話さない",
-    "img": ""
+    "img": "chars/kinoprime.jpg",
+    "character": "KINØPRIME（キノプライム）審査委員長の絵を3体で共有する",
+    "sheet": "grokbot_character_sheets/02_KINOPRIME_design_sheet.png",
+    "sheet_md": "grokbot_character_sheets/02_KINOPRIME.md"
   },
   "審査・スケール": {
     "team": "",
     "role": "審査員。スケール（広がるか）だけを見る",
-    "note": "数字好き",
+    "note": "審査員｜スケール",
     "tone": "数字と手間を数えたがる",
-    "img": ""
-  },
-  "主催者": {
-    "team": "",
-    "role": "お題を探して決め、進行し、時間を計り、最後に結果を発表する。企画への意見も採点もしない",
-    "note": "お題と進行",
-    "img": ""
+    "img": "chars/kinoprime.jpg",
+    "character": "KINØPRIME（キノプライム）審査委員長の絵を3体で共有する",
+    "sheet": "grokbot_character_sheets/02_KINOPRIME_design_sheet.png",
+    "sheet_md": "grokbot_character_sheets/02_KINOPRIME.md"
   }
 }

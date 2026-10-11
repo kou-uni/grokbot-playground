@@ -419,7 +419,7 @@ function renderStage(all, v2, T) {
   const key = !last ? "idle" : final ? "final" + last.id : judging ? "judge" + last.id : last.id + complete(last);
   if (key === stageKey) return; stageKey = key; clearInterval(typer); stage.textContent = "";
 
-  if (!last) { const d = el("div", "idle"); d.innerHTML = avatar("主催"); d.append(el("div", null, "開始を待っています。「はじめる」からお題ガチャを回せます。")); stage.append(d); return; }
+  if (!last) { const d = el("div", "idle"); d.innerHTML = avatar("主催者"); d.append(el("div", null, "開始を待っています。「はじめる」からお題ガチャを回せます。")); stage.append(d); return; }
   if (final) {
     const f = el("div", "finale"), tm = TEAMS[T.champ]; f.innerHTML = avatar("主催者");
     const who = el("div", "who", "優勝　" + tm.label); who.style.color = tm.c;
