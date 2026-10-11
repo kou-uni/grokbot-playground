@@ -406,7 +406,7 @@ setInterval(tick, 1000);
 const LINE = /[・\-*\s]*/.source, TAIL = /(?:\s*[\/／]\s*5)?(?:\s*点)?\s*[—\-–:：、,]*\s*(.*)$/.source;
 function tally(all) {
   const S = {}, cell = (r, t) => ((S[r] ||= {})[t] ||= { votes: 0 }), v2run = isV2(all);
-  let champ = null, runner = null, champWork = "", note = "";
+  let champ = null, runner = null, champWork = "", runnerWork = "", note = "";
   for (const m of all) {
     if (!complete(m)) continue; const text = bodyOf(m);
     if (m.kind === "採点") {
@@ -432,13 +432,13 @@ function tally(all) {
     }
     if (m.kind === "発表") {
       const c = text.match(new RegExp("(?:^|\\n)\\s*優勝\\s*[:：]\\s*(?:チーム)?\\s*" + TEAM_RE + "\\s*(?:「([^」]+)」)?", "i")); if (c) { champ = normTeam(c[1]); champWork = c[2] || ""; }
-      const r = text.match(new RegExp("準優勝\\s*[:：]\\s*(?:チーム)?\\s*" + TEAM_RE, "i")); if (r) runner = normTeam(r[1]);
+      const r = text.match(new RegExp("準優勝\\s*[:：]\\s*(?:チーム)?\\s*" + TEAM_RE + "\\s*(?:「([^」]+)」)?", "i")); if (r) { runner = normTeam(r[1]); runnerWork = r[2] || ""; }
       note = text;
     }
   }
-  return { S, champ, runner, champWork, note };
+  return { S, champ, runner, champWork, runnerWork, note };
 }
-const NAMED = /(?:企画名|作品名|名前|タイトル)\s*[:：]\s*[「『]?([^」』\n。（(]{2,40})/;   // 名前は、句点やかっこの手前まで
+const NAMED = /(?:企画名|作品名|名前|タイトル|作品)\s*[:：]\s*(?:https?:\S+\s*)?[「『]?([^」』\n。（(]{2,40})/;   // 名前は、句点やかっこの手前まで
 const trimName = t => t.replace(/\s*https?:\S*.*$/, "").replace(/[（(][^）)]*[）)]\s*$/, "").trim();   // URL とかっこ書きは名前に含めない
 function ideaOf(text) {
   const a = text.match(NAMED); if (a) return trimName(a[1]);
@@ -558,6 +558,7 @@ function renderBoard(all, v2, T) {
   const seen = new Set(all.map(m => teamOf(m.from)).filter(t => TEAMS[t]));
   const teams = v2 ? V2TEAMS : ["A", "B"].filter(t => seen.has(t) || !all.length);
   const ideas = ideaByTeam(all), finalists = v2 ? finalistsOf(all) : new Set();
+  if (T.champ && T.champWork) ideas[T.champ] = trimName(T.champWork); if (T.runner && T.runnerWork) ideas[T.runner] = trimName(T.runnerWork);
   for (const t of teams) {
     const tm = TEAMS[t], card = el("div", "tm" + (v2 && finalists.size && !finalists.has(t) ? " out" : "") + (T.champ === t ? " champ" : ""));
     card.style.borderColor = tm.c; card.style.background = tm.bg;
