@@ -3,7 +3,7 @@
 // 同じ問い合わせは数秒間まとめて1回にする（s-maxage）。中継側へ行く回数を抑えるため。
 module.exports = async (req, res) => {
   const topic = String(req.query.t || ""), since = String(req.query.since || "all");
-  if (!/^bothack-(selftest-)?[0-9a-f]{12,16}$/.test(topic)) return res.status(400).send("bad topic");
+  if (!/^bothack-(selftest-|ctl-)?[0-9a-f]{12,16}$/.test(topic)) return res.status(400).send("bad topic");
   if (!/^[A-Za-z0-9]{1,20}$/.test(since)) return res.status(400).send("bad since");
   try {
     const r = await fetch(`https://ntfy.sh/${topic}/json?poll=1&since=${since}`);
