@@ -358,7 +358,7 @@ function tally(all) {
   }
   return { S, champ, runner, champWork, note };
 }
-const NAMED = /(?:企画名|作品名|名前|タイトル)\s*[:：]\s*[「『]?([^」』\n]{2,40})/;
+const NAMED = /(?:企画名|作品名|名前|タイトル)\s*[:：]\s*[「『]?([^」』\n。（(]{2,40})/;   // 名前は、句点やかっこの手前まで
 const trimName = t => t.replace(/[（(][^）)]*[）)]\s*$/, "").trim();
 function ideaOf(text) {
   const a = text.match(NAMED); if (a) return trimName(a[1]);
