@@ -429,15 +429,28 @@ setInterval(() => { if (replayLimit == null) sync(); }, 20000);
 const nearBottom = () => innerHeight + scrollY >= document.body.offsetHeight - 260;
 const toBottom = () => scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
 
-async function poll(first) {
-  try {
-    const r = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}/json?poll=1&since=${lastNtfyId || "all"}`, { cache: "no-store" });
-    if (!r.ok) throw new Error(r.status);
-    const n = parseLines(await r.text(), !first);
-    liveOk = true; $("live").textContent = "ライブ"; $("live").classList.add("on");
-    if ((n || first) && replayLimit == null) { const stick = nearBottom(); sync(); if (n && stick && !first) toBottom(); }
-  } catch (e) { liveOk = false; $("live").textContent = "中継が途切れています"; $("live").classList.remove("on"); }
-  setTimeout(poll, 3000);
+/* 中継は1本つなぎっぱなしで受ける（SSE）。3秒おきに読み直すと、中継側の回数制限に当たるため */
+let es = null, drawTimer = null, sawNew = false;
+function draw() {
+  drawTimer = null; if (replayLimit != null) return;
+  const stick = nearBottom(); sync(); if (sawNew && stick) toBottom(); sawNew = false;
+}
+function connect() {
+  es = new EventSource(`https://ntfy.sh/${encodeURIComponent(topic)}/sse?since=${lastNtfyId || "all"}`);
+  es.onopen = () => { liveOk = true; $("live").textContent = "ライブ"; $("live").classList.add("on"); };
+  es.onmessage = e => {
+    try {
+      const o = JSON.parse(e.data); if (o.event !== "message") return;
+      lastNtfyId = o.id;
+      const isNew = Date.now() / 1000 - o.time < 20;      // 過去分はアニメーションなしで並べる
+      add(JSON.parse(o.message), isNew); sawNew ||= isNew;
+      drawTimer ||= setTimeout(draw, 80);
+    } catch (err) { /* 形式が違うものは読み飛ばす */ }
+  };
+  es.onerror = () => {
+    liveOk = false; $("live").textContent = "中継につなぎ直しています"; $("live").classList.remove("on");
+    es.close(); setTimeout(connect, 10000);
+  };
 }
 
 /* ---- 最初から再生 ---- */
@@ -524,10 +537,10 @@ preview(); show("live");
 topic = new URLSearchParams(location.search).get("t") || DEFAULT_TOPIC;
 // 保存済みの記録（log.jsonl）があれば先に読む。中継は12時間で消えるため、後から見る人はこちらを見る
 fetch("log.jsonl", { cache: "no-store" }).then(r => r.ok ? r.text() : "").then(t => { if (!t.trim().startsWith("<")) parseLines(t, false); })
-  .catch(() => {}).finally(async () => {
-    sync(); await poll(true);
+  .catch(() => {}).finally(() => {
+    sync(); connect();
     const q = new URLSearchParams(location.search);            // ?replay=1 で自動再生、?view=setup で設定画面から
-    if (q.get("view") === "setup") show("setup"); else if (q.get("replay")) replay();
+    if (q.get("view") === "setup") show("setup"); else if (q.get("replay")) setTimeout(replay, 2500);
   });
 </script>
 </body>
