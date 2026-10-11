@@ -19,7 +19,7 @@
 }
 </script>
 <style>
-  :root { --paper: #F6F4EE; --card: #FFFDF8; --line: #D9D3C4; --ink: #14181F; --soft: #454C59; --judge: #7C3AED; --gold: #D4A106; }
+  :root { --paper: #F6F4EE; --card: #FFFDF8; --line: #D9D3C4; --ink: #14181F; --soft: #454C59; --judge: #B7791F; --gold: #D4A106; }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--paper); color: var(--ink);
     font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif; line-height: 1.6; }
@@ -103,8 +103,8 @@
   .tm.champ { box-shadow: 0 0 0 5px #FDE68A; }
   .tm h3 { margin: 0; font-size: 17px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
   .tm h3 small { font-size: 12px; font-weight: 400; color: var(--soft); }
-  .tm .mems { display: flex; gap: 6px; margin: 4px 0; } .tm .mems svg { width: 38px; height: 38px; }
-  .tm .mems span { font-size: 11px; line-height: 1.2; text-align: center; color: var(--soft); width: 62px; }
+  .tm .mems { display: flex; gap: 10px; margin: 6px 0; } .tm .mems svg { width: 54px; height: 54px; display: block; margin: 0 auto; }
+  .tm .mems span { display: block; font-size: 11px; font-weight: 700; line-height: 1.2; text-align: center; color: var(--soft); }
   .tm .idea { font-weight: 800; font-size: 15px; min-height: 1.6em; }
   .tm .idea.pop { animation: slam .6s cubic-bezier(.2,1.6,.4,1); }
   .tm .idea.none { font-weight: 400; color: var(--soft); }
@@ -132,6 +132,7 @@
   .more { font: inherit; font-size: 13px; margin-top: 4px; padding: 1px 12px; border-radius: 20px; cursor: pointer; border: 1px solid var(--line); background: #fff; color: var(--ink); }
   .partial { color: var(--soft); font-size: 12px; }
   .row.new .bubble, .row.new .av { animation: bub .45s cubic-bezier(.2,1.5,.4,1) both; }
+  svg.pic { border-radius: 24%; background: #fff; }
   .eye { animation: blink 4s infinite; transform-origin: center; transform-box: fill-box; }
   @keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
   .empty { color: var(--soft); padding: 40px 0; text-align: center; }
@@ -224,11 +225,19 @@ const Q = new URLSearchParams(location.search);
 
 /* ---- チームと登場Bot ---- */
 const TEAMS = {
-  A: { c: "#E4572E", c2: "#F28C28", bg: "#FFE9DC", skill: "触って分かるもの" },
-  B: { c: "#2563EB", c2: "#38A3E8", bg: "#E1ECFF", skill: "広まる仕組み" },
-  C: { c: "#15803D", c2: "#4CAF50", bg: "#DFF5E4", skill: "困りごとを解く道具" },
-  D: { c: "#DB2777", c2: "#F472B6", bg: "#FFE3F1", skill: "遊びと物語" },
+  // 第2回から：wesley のキャラクター設定（grokbot_character_sheets/）のチームと色
+  COBALT:      { c: "#1762C9", c2: "#5B9BE8", bg: "#E3EEFC", label: "COBALT", kana: "コバルト", side: "L" },
+  EMBER:       { c: "#E85B20", c2: "#F59A62", bg: "#FFE9DC", label: "EMBER", kana: "エンバー", side: "R" },
+  VIRIDIAN:    { c: "#25824D", c2: "#5DB583", bg: "#DFF5E4", label: "VIRIDIAN", kana: "ヴィリジアン", side: "L" },
+  ULTRAVIOLET: { c: "#7941CB", c2: "#A77BE3", bg: "#EFE6FB", label: "ULTRAVIOLET", kana: "ウルトラバイオレット", side: "R" },
+  // 第1回の記録用
+  A: { c: "#E4572E", c2: "#F28C28", bg: "#FFE9DC", label: "チームA", kana: "触って分かるもの", side: "L" },
+  B: { c: "#2563EB", c2: "#38A3E8", bg: "#E1ECFF", label: "チームB", kana: "広まる仕組み", side: "R" },
 };
+const V2TEAMS = ["COBALT", "EMBER", "VIRIDIAN", "ULTRAVIOLET"];
+const MEMBERS = { CIPHER: "COBALT", BIT: "COBALT", ATLAS: "EMBER", BLITZ: "EMBER", ORACLE: "VIRIDIAN", PATCH: "VIRIDIAN", SPARK: "ULTRAVIOLET", GLITCH: "ULTRAVIOLET" };
+const TEAM_RE = "(COBALT|EMBER|VIRIDIAN|ULTRAVIOLET|コバルト|エンバー|ヴィリジアン|ウルトラバイオレット|[AB](?![A-Za-z]))";
+const normTeam = t => { t = (t || "").toUpperCase(); return TEAMS[t] ? t : (V2TEAMS.find(k => TEAMS[k].kana === t) || "S"); };
 // [名前に含まれる語, 小物, 性格のひとこと（第2回から）]
 const ROLES = [
   ["デザイナー", "beret", "ENFP 盛り上げ役"], ["コーダー", "glasses", "ISTP 無口な職人"], ["プランナー", "bulb", "ENTJ 戦略家"],
@@ -237,8 +246,16 @@ const ROLES = [
   ["発想", "judge", "新しさに辛口"], ["価値", "judge", "使う人の味方"], ["スケール", "judge", "数字好き"], ["審査", "judge", ""],
   ["お題決め", "dice", "ガチャ係"], ["リサーチ", "lens", "Xを調べる"], ["プレゼン", "bow", "結果を発表"], ["主催", "mic", "進行役"],
 ];
-const teamOf = n => { const m = /^(?:チーム)?([A-D])(?![a-zA-Z])/.exec(n || ""); return m ? m[1] : "S"; };
-const sideOf = n => ({ A: "L", C: "L", B: "R", D: "R", S: "C" })[teamOf(n)];
+// 名前からチームを決める。Bot名（CIPHER など）、チーム名（COBALT、チームCOBALT、コバルト）、第1回の「A・デザイナー」に対応
+function teamOf(n) {
+  n = n || ""; const up = n.toUpperCase();
+  for (const k of V2TEAMS) if (up.includes(k) || n.includes(TEAMS[k].kana)) return k;
+  for (const k of Object.keys(MEMBERS)) if (up.includes(k)) return MEMBERS[k];
+  const ch = charOf(n); if (ch && TEAMS[ch.team]) return ch.team;
+  const m = /^(?:チーム)?([AB])(?:・|$)/.exec(n); return m ? m[1] : "S";
+}
+const sideOf = n => { const t = TEAMS[teamOf(n)]; return t ? t.side : "C"; };
+const isMember = n => { const up = (n || "").toUpperCase(); return Object.keys(MEMBERS).some(k => up.includes(k)) || /^[AB]・/.test(n || "") || !!(charOf(n) && TEAMS[charOf(n).team]); };
 const roleOf = n => ROLES.find(x => (n || "").includes(x[0]));
 
 const EXTRA = {
@@ -256,19 +273,19 @@ const EXTRA = {
   bow: '<path d="M22 56l10-4 10 4-10 4zM28 52l4 4 4-4z" fill="#B91C1C" stroke="#14181F" stroke-width="1.2"/>',
   judge: '<path d="M22 57l10-5 10 5-10 5z" fill="#14181F"/><circle cx="41" cy="32" r="8" fill="none" stroke="#FACC15" stroke-width="2.5"/>',
 };
-const STAFF = { "お題決め": "#D97706", "リサーチ": "#0D9488", "プレゼン": "#B91C1C", "主催": "#64748B", "発想": "#7C3AED", "価値": "#9333EA", "スケール": "#6D28D9", "審査": "#7C3AED" };
+const STAFF = { "お題決め": "#DB2777", "リサーチ": "#0D9488", "プレゼン": "#B91C1C", "主催": "#64748B", "発想": "#B7791F", "価値": "#92400E", "スケール": "#D97706", "審査": "#B7791F" };
 // characters.json があれば、絵（img）と性格のひとこと（note）をそこから取る。無ければ下の自作ロボットを使う
 //   例: {"A・デザイナー": {"img": "chars/a-designer.png", "note": "ENFP 盛り上げ役"}}
 let CHARS = {};
-const charOf = n => CHARS[n] || CHARS[Object.keys(CHARS).find(k => (n || "").includes(k))] || null;
+const charOf = n => CHARS[n] || CHARS[Object.keys(CHARS).find(k => (n || "").toUpperCase().includes(k.toUpperCase()))] || null;
 const noteOf = n => { const c = charOf(n), r = roleOf(n); return c && c.note != null ? c.note : r ? r[2] : ""; };
 function avatar(name) {
   const ch = charOf(name);
   if (ch && /^[\w\-./]+\.(png|jpg|jpeg|webp|svg|gif)$/i.test(ch.img || "") && !ch.img.includes(".."))
-    return `<svg viewBox="0 0 64 64" aria-hidden="true"><image href="${ch.img}" width="64" height="64" preserveAspectRatio="xMidYMid meet"/></svg>`;
+    return `<svg class="pic" viewBox="0 0 64 64" aria-hidden="true"><image href="${ch.img}" width="64" height="64" preserveAspectRatio="xMidYMid slice"/></svg>`;
   const r = roleOf(name), t = teamOf(name), kind = r ? r[1] : "";
   let color = "#64748B";
-  if (TEAMS[t]) color = /コーダー|マーケター|エンジニア|ライター/.test(name) ? TEAMS[t].c2 : TEAMS[t].c;
+  if (TEAMS[t]) color = /コーダー|マーケター|BIT|BLITZ|PATCH|GLITCH/i.test(name) ? TEAMS[t].c2 : TEAMS[t].c;
   else if (r) color = STAFF[r[0]] || color;
   const noAnt = ["bulb", "beret", "heart", "gear", "star", "dice"].includes(kind);
   const antenna = noAnt ? "" : '<path d="M32 14V7" stroke="#14181F" stroke-width="2.5"/><circle cx="32" cy="5" r="3.5" fill="#FF6B6B"/>';
@@ -322,7 +339,7 @@ function currentList(ignoreLimit) {
 
 /* ---- 形式の判定と、採点の集計 ---- */
 // 第2回からは6章・審査3体。第1回の記録（3ラウンド・審査1体）もそのまま読めるようにしている
-const isV2 = all => !all.length || all.some(m => m.kind === "お題" || m.round > 3 || /お題決め|審査・/.test(m.from));
+const isV2 = all => !all.length || all.some(m => m.kind === "お題" || m.round > 3 || /お題決め|審査・/.test(m.from) || V2TEAMS.includes(teamOf(m.from)));
 const CH2 = { 1: "お題", 2: "企画", 3: "予選", 4: "磨き直し", 5: "決勝", 6: "発表" }, CH1 = { 1: "企画", 2: "提案と議論", 3: "制作と決勝" };
 const CRITS = ["発想", "価値", "スケール"];
 const LINE = /[・\-*\s]*/.source, TAIL = /(?:\s*[\/／]\s*5)?(?:\s*点)?\s*[—\-–:：、,]*\s*(.*)$/.source;
@@ -335,9 +352,9 @@ function tally(all) {
       const crit = CRITS.find(c => m.from.includes(c));
       if (crit) {                                           // 審査3体：1体が1つの基準
         for (const raw of text.split("\n")) {
-          const s = raw.trim().match(new RegExp("^" + LINE + "チーム\\s*([A-D])\\s*[:：]\\s*([0-5])" + TAIL));
-          if (s) { cell(m.round, s[1])[crit] = { p: +s[2], why: s[3] }; continue; }
-          const v = raw.trim().match(/^投票\s*[:：]\s*チーム\s*([A-D])/); if (v) cell(m.round, v[1]).votes++;
+          const s = raw.trim().match(new RegExp("^" + LINE + "(?:チーム)?\\s*" + TEAM_RE + "\\s*[:：]\\s*([0-5])" + TAIL, "i"));
+          if (s) { cell(m.round, normTeam(s[1]))[crit] = { p: +s[2], why: s[3] }; continue; }
+          const v = raw.trim().match(new RegExp("^投票\\s*[:：]\\s*(?:チーム)?\\s*" + TEAM_RE, "i")); if (v) cell(m.round, normTeam(v[1])).votes++;
         }
       } else {                                              // 第1回：審査1体が【チームA】ごとに3基準
         let cur = null;
@@ -345,14 +362,14 @@ function tally(all) {
           const line = raw.trim();
           const s = line.match(new RegExp("^" + LINE + "(発想|価値|スケール)\\s*[:：]\\s*([0-5])" + TAIL));
           if (s && cur) { cell(m.round, cur)[s[1]] = { p: +s[2], why: s[3] }; continue; }
-          const w = line.match(/^勝者\s*[:：]\s*チーム\s*([A-D])/); if (w && m.round >= 3) { champ = w[1]; continue; }
-          const t = line.match(/チーム\s*([A-D])/); if (t && line.length < 24) cur = t[1];
+          const w = line.match(/^勝者\s*[:：]\s*チーム\s*([AB])/); if (w && m.round >= 3) { champ = w[1]; continue; }
+          const t = line.match(/チーム\s*([AB])/); if (t && line.length < 24) cur = t[1];
         }
       }
     }
     if (m.kind === "発表") {
-      const c = text.match(/優勝\s*[:：]\s*チーム\s*([A-D])\s*(?:「([^」]+)」)?/); if (c) { champ = c[1]; champWork = c[2] || ""; }
-      const r = text.match(/準優勝\s*[:：]\s*チーム\s*([A-D])/); if (r) runner = r[1];
+      const c = text.match(new RegExp("(?:^|\\n)\\s*優勝\\s*[:：]\\s*(?:チーム)?\\s*" + TEAM_RE + "\\s*(?:「([^」]+)」)?", "i")); if (c) { champ = normTeam(c[1]); champWork = c[2] || ""; }
+      const r = text.match(new RegExp("準優勝\\s*[:：]\\s*(?:チーム)?\\s*" + TEAM_RE, "i")); if (r) runner = normTeam(r[1]);
       note = text;
     }
   }
@@ -379,7 +396,7 @@ function ideaByTeam(all) {
 function finalistsOf(all) {
   for (const m of all) if (m.kind === "進行" && m.round >= 3 && complete(m)) {
     const k = bodyOf(m).lastIndexOf("決勝"); if (k < 0) continue;
-    const ts = [...new Set([...bodyOf(m).slice(k).matchAll(/チーム\s*([A-D])/g)].map(x => x[1]))]; if (ts.length === 2) return new Set(ts);
+    const ts = [...new Set([...bodyOf(m).slice(k).matchAll(new RegExp(TEAM_RE, "gi"))].map(x => normTeam(x[1])).filter(t => TEAMS[t]))]; if (ts.length === 2) return new Set(ts);
   }
   return new Set(all.filter(m => m.round >= 4 && TEAMS[teamOf(m.from)]).map(m => teamOf(m.from)));
 }
@@ -403,7 +420,7 @@ function renderStage(all, v2, T) {
   if (!last) { const d = el("div", "idle"); d.innerHTML = avatar("主催"); d.append(el("div", null, "開始を待っています。「はじめる」からお題ガチャを回せます。")); stage.append(d); return; }
   if (final) {
     const f = el("div", "finale"), tm = TEAMS[T.champ]; f.innerHTML = avatar("プレゼンター");
-    const who = el("div", "who", "優勝　チーム" + T.champ); who.style.color = tm.c;
+    const who = el("div", "who", "優勝　" + tm.label); who.style.color = tm.c;
     f.append(el("div", "cup", "WINNER"), who);
     const idea = T.champWork || ideaByTeam(all)[T.champ]; if (idea) f.append(el("div", "work", "「" + idea + "」"));
     if (T.note) f.append(el("div", "sub", T.note.split("\n").filter(l => /^(票|作品|ひとこと)/.test(l.trim())).join("\n")));
@@ -416,7 +433,7 @@ function renderStage(all, v2, T) {
   }
   const right = sideOf(last.from) === "R", isNew = last.isStageNew !== false && (last.isNew || replayLimit != null); last.isStageNew = false;
   const spk = slot(last.from, "speak" + (isNew ? " enter " + (right ? "r" : "l") : ""), v2);
-  const other = last.to && !/^全員/.test(last.to) ? slot(/^チーム[A-D]$/.test(last.to) ? last.to : last.to, "dim", v2) : el("div", "slot");
+  const other = last.to && !/^全員/.test(last.to) ? slot(last.to, "dim", v2) : el("div", "slot");
   const say = el("div", "say " + (right ? "r" : "l") + (isNew ? " pop" : ""));
   const tm = TEAMS[teamOf(last.from)]; if (tm) say.style.background = tm.bg;
   const meta = el("div", "meta"); meta.append(el("span", "kind k-" + last.kind, last.kind), el("span", null, last.from + " → " + last.to));
@@ -442,14 +459,16 @@ function renderHead(all, v2) {
 function renderBoard(all, v2, T) {
   const box = $("board"); box.textContent = "";
   const seen = new Set(all.map(m => teamOf(m.from)).filter(t => TEAMS[t]));
-  const teams = v2 ? ["A", "B", "C", "D"] : ["A", "B"].filter(t => seen.has(t) || !all.length);
+  const teams = v2 ? V2TEAMS : ["A", "B"].filter(t => seen.has(t) || !all.length);
   const ideas = ideaByTeam(all), finalists = v2 ? finalistsOf(all) : new Set();
   for (const t of teams) {
     const tm = TEAMS[t], card = el("div", "tm" + (v2 && finalists.size && !finalists.has(t) ? " out" : "") + (T.champ === t ? " champ" : ""));
     card.style.borderColor = tm.c; card.style.background = tm.bg;
-    const h = el("h3"); h.append(el("span", null, "チーム" + t), el("small", null, tm.skill)); h.firstChild.style.color = tm.c; card.append(h);
-    const mems = el("div", "mems"), names = [...new Set(all.filter(m => teamOf(m.from) === t && m.from.includes("・")).map(m => m.from))];
-    for (const n of names) { const d = el("div"); d.innerHTML = avatar(n); d.append(el("span", null, n.replace(/^[A-D]・/, ""))); mems.append(d); }
+    const h = el("h3"); h.append(el("span", null, tm.label), el("small", null, tm.kana)); h.firstChild.style.color = tm.c; card.append(h);
+    // メンバーは、設定ファイルにあればそこから、無ければ発言した Bot から出す
+    const fromFile = Object.keys(CHARS).filter(k => CHARS[k].team === t);
+    const mems = el("div", "mems"), names = fromFile.length ? fromFile : [...new Set(all.filter(m => teamOf(m.from) === t && isMember(m.from)).map(m => m.from))];
+    for (const n of names) { const d = el("div"); d.innerHTML = avatar(n); d.append(el("span", null, n.replace(/^[AB]・/, ""))); mems.append(d); }
     if (names.length) card.append(mems);
     const idea = el("div", "idea" + (ideas[t] ? "" : " none"), ideas[t] ? "「" + ideas[t] + "」" : "企画を考え中…");
     if (ideas[t] && !seenIdea.has(t + ideas[t])) { seenIdea.add(t + ideas[t]); idea.classList.add("pop"); } card.append(idea);

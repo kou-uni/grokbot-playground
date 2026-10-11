@@ -47,7 +47,8 @@ Bot（Grok Bot のクラウドコンピュータ）
 
 ## キャラクターの絵と設定
 
-リポジトリ直下の `characters.json` と、`chars/` フォルダの絵から読む。決まりは [chars/README.md](chars/README.md)。
+設定と絵の元は、wesley の [grokbot_character_sheets/](grokbot_character_sheets/) にある（[全体の一覧](grokbot_character_sheets/00_full_roster.md)）。
+画面は、そこから作った `characters.json` と `chars/` のアイコンを読む。決まりは [chars/README.md](chars/README.md)。
 絵が無い Bot には、画面内の自作ロボットが出る。
 
 ## Bot 側の準備（クラウドコンピュータで1回）
