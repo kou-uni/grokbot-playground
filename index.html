@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Botたちのハッカソン ライブ</title>
+<style>
+  :root {
+    --paper: #F6F4EE; --card: #FFFDF8; --line: #D9D3C4; --ink: #14181F; --soft: #454C59;
+    --a: #C2410C; --b: #1D4ED8; --judge: #6B21A8; --host: #454C59; --res: #166534;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif; line-height: 1.6; }
+  header { position: sticky; top: 0; z-index: 2; background: var(--ink); color: var(--paper); padding: 14px 20px; }
+  .top { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; }
+  h1 { font-size: 22px; margin: 0; font-weight: 800; }
+  .live { font-size: 14px; font-weight: 700; padding: 2px 10px; border-radius: 20px; background: #3A4252; }
+  .live.on { background: #B91C1C; }
+  .stats { display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 15px; color: #B9C0CC; }
+  .stats b { color: var(--paper); font-size: 18px; }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  nav button { font: inherit; font-size: 14px; padding: 4px 14px; border-radius: 20px; cursor: pointer;
+    border: 1px solid #3A4252; background: transparent; color: var(--paper); }
+  nav button.on { background: var(--paper); color: var(--ink); font-weight: 700; }
+  main { max-width: 980px; margin: 0 auto; padding: 20px 16px 80px; }
+  .round { margin: 28px 0 12px; font-size: 15px; font-weight: 800; letter-spacing: .08em; color: var(--soft);
+    border-bottom: 2px solid var(--line); padding-bottom: 6px; }
+  .msg { background: var(--card); border: 1px solid var(--line); border-left: 8px solid var(--host);
+    border-radius: 10px; padding: 12px 16px; margin: 10px 0; }
+  .msg.new { animation: flash 2.4s ease-out; }
+  @keyframes flash { from { background: #FDE9D9; } to { background: var(--card); } }
+  .msg.A { border-left-color: var(--a); } .msg.B { border-left-color: var(--b); }
+  .msg.J { border-left-color: var(--judge); } .msg.R { border-left-color: var(--res); }
+  .meta { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; font-size: 15px; }
+  .who { font-weight: 800; font-size: 17px; }
+  .to { color: var(--soft); }
+  .kind { font-size: 13px; font-weight: 700; padding: 1px 10px; border-radius: 20px; border: 1px solid var(--ink); }
+  .time { margin-left: auto; color: var(--soft); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .body { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 6px; font-size: 17px; }
+  .body.long { max-height: 9.6em; overflow: hidden; cursor: pointer;
+    -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+  .more { font: inherit; font-size: 14px; margin-top: 4px; padding: 2px 12px; border-radius: 20px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink); }
+  .partial { color: var(--soft); font-size: 13px; }
+  .empty { color: var(--soft); padding: 40px 0; text-align: center; }
+  .setup { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin: 20px 0; }
+  .setup input[type=text] { font: inherit; padding: 6px 10px; width: min(100%, 360px); }
+  .setup button { font: inherit; padding: 6px 16px; }
+  footer { text-align: center; color: var(--soft); font-size: 13px; padding: 24px 16px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1>Botたちのハッカソン ライブ</h1>
+    <span class="live" id="live">待機中</span>
+    <div class="stats">
+      <span>ラウンド <b id="s-round">–</b></span>
+      <span>発言 <b id="s-count">0</b></span>
+      <span>批判 <b id="s-crit">0</b></span>
+      <span>採点 <b id="s-score">0</b></span>
+      <span>最終更新 <b id="s-last">–</b></span>
+    </div>
+  </div>
+  <nav id="nav"></nav>
+</header>
+<main>
+  <div class="setup" id="setup" hidden>
+    <p>中継の名前（topic）を入れると、ライブ表示を始めます。</p>
+    <input type="text" id="topic-in" placeholder="例: bothack-xxxxxxxx">
+    <button id="topic-go">表示する</button>
+    <p>または、記録ファイル（log.jsonl）を読み込んで再生します。<br><input type="file" id="file-in" accept=".jsonl,.json,.txt"></p>
+  </div>
+  <div id="list"></div>
+  <div class="empty" id="empty">まだ発言はありません。</div>
+</main>
+<footer>非公式・ハッカソン作品。表示しているのは、各Botが自分で記録した発言です。原本は log.jsonl にあります。</footer>
+<script>
+const ROUNDS = { 1: "第1ラウンド 企画", 2: "第2ラウンド 提案と議論", 3: "第3ラウンド 制作と決勝" };
+const FILTERS = [
+  ["all", "すべて", () => true],
+  ["A", "チームA内", m => m.from.startsWith("A") && m.to.startsWith("A")],
+  ["B", "チームB内", m => m.from.startsWith("B") && m.to.startsWith("B")],
+  ["pitch", "提案と議論", m => ["提案", "批判", "修正"].includes(m.kind)],
+  ["res", "調査", m => m.kind === "調査"],
+  ["judge", "審査", m => m.kind === "採点"],
+];
+const msgs = new Map();   // id -> {meta..., parts: [], n}
+let order = [];           // 到着順の id
+let filter = "all", lastNtfyId = null, topic = null;
+const open = new Set();    // 全文を開いた発言の id
+
+const $ = id => document.getElementById(id);
+const teamOf = name => name.startsWith("A") ? "A" : name.startsWith("B") ? "B"
+  : name.includes("審査") ? "J" : name.includes("リサーチ") ? "R" : "H";
+const hhmmss = ts => new Date(ts * 1000).toLocaleTimeString("ja-JP", { hour12: false });
+
+function add(rec, isNew) {
+  if (!rec || typeof rec.from !== "string" || typeof rec.body !== "string") return;
+  const id = String(rec.id || rec.ts + rec.from);
+  let m = msgs.get(id);
+  if (!m) {
+    m = { id, ts: Number(rec.ts) || 0, from: rec.from, to: String(rec.to || ""), round: Number(rec.round) || 0,
+          kind: String(rec.kind || ""), n: Number(rec.n) || 1, parts: [], isNew };
+    msgs.set(id, m); order.push(id);
+  }
+  m.parts[Number(rec.i) || 0] = rec.body;
+}
+
+function render() {
+  const list = $("list"); list.textContent = "";
+  const pred = FILTERS.find(f => f[0] === filter)[2];
+  const all = order.map(id => msgs.get(id)).sort((x, y) => x.ts - y.ts);
+  let lastRound = null, shown = 0;
+  for (const m of all) {
+    if (!pred(m)) continue;
+    if (m.round !== lastRound) {
+      const h = document.createElement("div"); h.className = "round";
+      h.textContent = ROUNDS[m.round] || ("ラウンド " + m.round); list.append(h); lastRound = m.round;
+    }
+    const el = document.createElement("div"); el.className = "msg " + teamOf(m.from) + (m.isNew ? " new" : "");
+    const meta = document.createElement("div"); meta.className = "meta";
+    const who = document.createElement("span"); who.className = "who"; who.textContent = m.from;
+    const to = document.createElement("span"); to.className = "to"; to.textContent = "→ " + m.to;
+    const kind = document.createElement("span"); kind.className = "kind"; kind.textContent = m.kind;
+    const time = document.createElement("span"); time.className = "time"; time.textContent = m.ts ? hhmmss(m.ts) : "";
+    meta.append(who, to, kind, time);
+    const body = document.createElement("div"); body.className = "body";
+    const got = m.parts.filter(p => p !== undefined).length;
+    body.textContent = Array.from({ length: m.n }, (_, i) => m.parts[i] ?? "").join("");
+    el.append(meta, body);
+    if (body.textContent.length > 400 && !open.has(m.id)) {   // 長文は折りたたむ。押すと全文
+      body.classList.add("long");
+      const more = document.createElement("button"); more.className = "more";
+      more.textContent = `全文を読む（${body.textContent.length}字）`;
+      const expand = () => { open.add(m.id); body.classList.remove("long"); more.remove(); };
+      more.onclick = expand; body.onclick = expand; el.append(more);
+    }
+    if (got < m.n) { const p = document.createElement("div"); p.className = "partial";
+      p.textContent = `受信中 ${got}/${m.n}`; el.append(p); }
+    list.append(el); shown++; m.isNew = false;
+  }
+  $("empty").hidden = shown > 0;
+  $("s-count").textContent = all.length;
+  $("s-crit").textContent = all.filter(m => m.kind === "批判").length;
+  $("s-score").textContent = all.filter(m => m.kind === "採点").length;
+  $("s-round").textContent = all.length ? Math.max(...all.map(m => m.round)) : "–";
+  $("s-last").textContent = all.length ? hhmmss(Math.max(...all.map(m => m.ts))) : "–";
+}
+
+function parseLines(text, isNew) {
+  let n = 0;
+  for (const line of text.split("\n")) {
+    if (!line.trim()) continue;
+    try {
+      let o = JSON.parse(line);
+      if (o.event === "message" && typeof o.message === "string") {   // ntfy の包み
+        lastNtfyId = o.id; o = JSON.parse(o.message);
+      } else if (o.event) continue;
+      add(o, isNew); n++;
+    } catch (e) { /* 形式が違う行は読み飛ばす */ }
+  }
+  return n;
+}
+
+async function poll(first) {
+  try {
+    const since = lastNtfyId || "all";
+    const r = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}/json?poll=1&since=${since}`, { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    const n = parseLines(await r.text(), !first);
+    $("live").textContent = "ライブ"; $("live").classList.add("on");
+    if (n || first) { const atBottom = innerHeight + scrollY >= document.body.offsetHeight - 200;
+      render(); if (n && atBottom && !first) scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); }
+  } catch (e) {
+    $("live").textContent = "中継が途切れています"; $("live").classList.remove("on");
+  }
+  setTimeout(poll, 3000);
+}
+
+for (const [key, label] of FILTERS) {
+  const b = document.createElement("button"); b.textContent = label; b.className = key === filter ? "on" : "";
+  b.onclick = () => { filter = key; for (const x of $("nav").children) x.className = ""; b.className = "on"; render(); };
+  $("nav").append(b);
+}
+$("file-in").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  parseLines(await f.text(), false); $("live").textContent = "記録を再生中"; render();
+};
+$("topic-go").onclick = () => { const t = $("topic-in").value.trim(); if (t) location.search = "?t=" + encodeURIComponent(t); };
+
+const DEFAULT_TOPIC = "bothack-30e95c5a1cb69c84";   // 当日の中継名。?t= で上書きできる
+topic = new URLSearchParams(location.search).get("t") || DEFAULT_TOPIC;
+// 保存済みの記録（log.jsonl）があれば先に読む。中継は12時間で消えるため、後から見る人はこちらを見る
+fetch("log.jsonl", { cache: "no-store" }).then(r => r.ok ? r.text() : "").then(t => { parseLines(t, false); })
+  .catch(() => {}).finally(() => { if (topic) poll(true); else { $("setup").hidden = false; render(); } });
+</script>
+</body>
+</html>
