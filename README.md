@@ -17,6 +17,7 @@ Grok Bot の Bot たちが2チームに分かれてハッカソンを行い、�
 ## 設計と経緯
 
 - [設計書](docs/DESIGN.md)：いま動いているもの（v1）と、次の版（v2）の設計。確かめたことと未確認のことを分けて書いている
+- [提出フォームの内容](docs/submission-form.md)：フォームの欄ごとに貼る文。第2回まで反映（管理は凛）
 - [提出ドキュメント（仮提出版）](docs/submission-draft.md)：Grok Bot が書いた、1回目の本番の経過・2作品・採点・既知の課題（[Word 版](docs/submission-draft.docx)、[PDF 版](docs/submission-draft.pdf)）
 - [UI連携の要求事項](docs/ui-requirements.md)：Bot 側から UI 側へ。第2回で実際に流れた32件をもとに、Grok Bot が書いた
 - [UI・UX の仕様](docs/UIUX.md)：画面の構成、演出、決めてある値、まだ決まっていないこと（担当 wesley）
